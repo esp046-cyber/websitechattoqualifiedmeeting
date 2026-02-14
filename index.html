@@ -1,0 +1,4547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Website Chat to Qualified Meeting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #00ff00;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.light-mode {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        body.light-mode .header {
+            background: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%);
+        }
+
+        body.light-mode .chat-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #ff00ff;
+        }
+
+        body.light-mode .message.bot {
+            background: rgba(0, 255, 255, 0.2);
+            color: #006666;
+        }
+
+        body.light-mode .message.user {
+            background: rgba(255, 0, 255, 0.2);
+            color: #660066;
+        }
+
+        body.light-mode .message.system {
+            background: rgba(0, 255, 0, 0.2);
+            color: #006600;
+        }
+
+        body.light-mode .sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #00ff00;
+        }
+
+        body.light-mode .input-area input {
+            background: rgba(0, 255, 255, 0.1);
+            color: #006666;
+        }
+
+        body.light-mode .quick-btn {
+            background: rgba(0, 255, 255, 0.3);
+            color: #006666;
+        }
+
+        body.light-mode .typing-indicator {
+            background: rgba(0, 255, 255, 0.2);
+            color: #006666;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 1%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 1%;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .header h1 {
+            font-size: 14px;
+            color: #000;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 10px;
+            color: #00ffff;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        body.light-mode .theme-toggle {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: #666;
+            color: #666;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #00ff00, #00ffff);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .exit-intent-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.8);
+            z-index: 1000;
+            max-width: 90%;
+            width: 350px;
+            animation: popIn 0.3s ease;
+        }
+
+        body.light-mode .exit-intent-popup {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        .popup-title {
+            color: #ff00ff;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .popup-text {
+            color: #00ffff;
+            font-size: 12px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        body.light-mode .popup-title {
+            color: #990099;
+        }
+
+        body.light-mode .popup-text {
+            color: #006666;
+        }
+
+        .popup-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        body.light-mode .popup-input {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #00aaaa;
+            color: #006666;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .popup-btn.primary {
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            color: #000;
+        }
+
+        .popup-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #666;
+            color: #00ffff;
+        }
+
+        body.light-mode .popup-btn.secondary {
+            color: #666;
+        }
+
+        .calendar-card {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(0, 255, 255, 0.2));
+            border: 2px solid #ff00ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 10px;
+            animation: slideIn 0.5s ease;
+        }
+
+        body.light-mode .calendar-card {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .calendar-icon {
+            font-size: 24px;
+        }
+
+        .calendar-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff00ff;
+        }
+
+        body.light-mode .calendar-title {
+            color: #990099;
+        }
+
+        .calendar-details {
+            font-size: 11px;
+            line-height: 1.8;
+            color: #00ffff;
+        }
+
+        body.light-mode .calendar-details {
+            color: #006666;
+        }
+
+        .calendar-detail-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .validated {
+            border-color: #00ff00 !important;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .invalid {
+            border-color: #ff0000 !important;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .debug-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-left: 3px solid #00ff00;
+            transition: right 0.3s ease;
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .debug-panel.open {
+            right: 0;
+        }
+
+        body.light-mode .debug-panel {
+            background: linear-gradient(135deg, #f5f5f5, #ffffff);
+            border-left-color: #00aa00;
+        }
+
+        .debug-toggle {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #00ff00, #00ffff);
+            border: none;
+            padding: 15px 8px;
+            cursor: pointer;
+            z-index: 2001;
+            font-size: 10px;
+            font-weight: bold;
+            color: #000;
+            writing-mode: vertical-rl;
+            border-radius: 8px 0 0 8px;
+        }
+
+        .debug-title {
+            color: #00ff00;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+        }
+
+        body.light-mode .debug-title {
+            color: #00aa00;
+            border-bottom-color: #00aa00;
+        }
+
+        .lead-card {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        body.light-mode .lead-card {
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .lead-card strong {
+            color: #00ffff;
+        }
+
+        body.light-mode .lead-card strong {
+            color: #0088aa;
+        }
+
+        .voice-btn {
+            padding: 10px;
+            background: linear-gradient(135deg, #ff00ff, #ff0080);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-btn.recording {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #ff0000, #ff0080);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .share-btn {
+            background: linear-gradient(135deg, #00ffff, #00ff00);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .sentiment-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .sentiment-positive {
+            background: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .sentiment-negative {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff0000;
+        }
+
+        .sentiment-neutral {
+            background: rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+        }
+
+        body.light-mode .sentiment-positive {
+            color: #008800;
+        }
+
+        body.light-mode .sentiment-negative {
+            color: #880000;
+        }
+
+        body.light-mode .sentiment-neutral {
+            color: #888800;
+        }
+
+        .offline-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #ff0000, #ff6600);
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 3000;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .offline-banner.show {
+            display: block;
+        }
+
+        .progress-container {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .progress-label {
+            font-size: 10px;
+            color: #00ffff;
+            margin-bottom: 4px;
+        }
+
+        body.light-mode .progress-label {
+            color: #006666;
+        }
+
+        .progress-bar-outer {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #00ffff;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #ff00ff, #00ffff, #00ff00);
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .customization-form {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        body.light-mode .customization-form {
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .customization-form input,
+        .customization-form select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 12px;
+        }
+
+        body.light-mode .customization-form input,
+        body.light-mode .customization-form select {
+            background: rgba(255, 255, 255, 0.8);
+            color: #006666;
+        }
+
+        .customization-form button {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .event-log {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #666;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            color: #00ff00;
+        }
+
+        body.light-mode .event-log {
+            background: rgba(255, 255, 255, 0.8);
+            color: #006600;
+        }
+
+        .queued-message {
+            background: rgba(255, 165, 0, 0.2);
+            border-left: 3px solid #ff9900;
+            padding: 4px 8px;
+            margin: 4px 0;
+            font-size: 10px;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .message.bot:hover .feedback-buttons {
+            opacity: 1;
+        }
+
+        .feedback-btn {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .feedback-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .feedback-btn.active {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+
+        .analytics-panel {
+            position: fixed;
+            top: 0;
+            left: -450px;
+            width: 450px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-right: 3px solid #ff00ff;
+            transition: left 0.3s ease;
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .analytics-panel.open {
+            left: 0;
+        }
+
+        body.light-mode .analytics-panel {
+            background: linear-gradient(135deg, #f5f5f5, #ffffff);
+            border-right-color: #990099;
+        }
+
+        .analytics-toggle {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #ff00ff, #ff0080);
+            border: none;
+            padding: 15px 8px;
+            cursor: pointer;
+            z-index: 2001;
+            font-size: 10px;
+            font-weight: bold;
+            color: #000;
+            writing-mode: vertical-rl;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 0, 255, 0.1);
+            border: 2px solid #ff00ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        body.light-mode .stat-card {
+            background: rgba(255, 0, 255, 0.05);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff00ff;
+            margin: 10px 0;
+        }
+
+        body.light-mode .stat-number {
+            color: #990099;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #00ffff;
+        }
+
+        body.light-mode .stat-label {
+            color: #006666;
+        }
+
+        .emoji-picker-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .emoji-picker {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            background: #1a1a1a;
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            padding: 10px;
+            display: none;
+            max-width: 280px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        body.light-mode .emoji-picker {
+            background: #ffffff;
+        }
+
+        .emoji-picker.open {
+            display: block;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .emoji-item {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            text-align: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .emoji-item:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: scale(1.2);
+        }
+
+        .emoji-btn {
+            padding: 8px;
+            background: rgba(255, 255, 0, 0.2);
+            border: 1px solid #ffff00;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .emoji-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 0, 0.3);
+        }
+
+        .file-upload-btn {
+            padding: 8px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .file-upload-btn:hover {
+            transform: scale(1.1);
+            background: rgba(0, 255, 0, 0.3);
+        }
+
+        .uploaded-file {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            border-radius: 15px;
+            padding: 4px 10px;
+            margin: 5px 0;
+            font-size: 10px;
+        }
+
+        .search-container {
+            padding: 8px;
+            background: rgba(0, 255, 255, 0.1);
+            border-bottom: 1px solid #00ffff;
+            display: none;
+        }
+
+        .search-container.active {
+            display: block;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #00ffff;
+            border-radius: 15px;
+            color: #00ffff;
+            font-size: 12px;
+        }
+
+        body.light-mode .search-input {
+            background: rgba(255, 255, 255, 0.8);
+            color: #006666;
+        }
+
+        .search-result {
+            background: rgba(255, 255, 0, 0.3);
+        }
+
+        .personality-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 0, 255, 0.2);
+            border: 2px solid #ff00ff;
+            border-radius: 20px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 10px;
+            color: #ff00ff;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .personality-toggle:hover {
+            background: rgba(255, 0, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        body.light-mode .personality-toggle {
+            background: rgba(255, 0, 255, 0.1);
+            border-color: #990099;
+            color: #990099;
+        }
+
+        .notification-permission {
+            background: rgba(255, 165, 0, 0.2);
+            border: 2px solid #ff9900;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .notification-permission button {
+            background: linear-gradient(135deg, #ff9900, #ffcc00);
+            border: none;
+            border-radius: 15px;
+            padding: 6px 12px;
+            color: #000;
+            font-weight: bold;
+            font-size: 10px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .chart-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .chart-label {
+            width: 120px;
+            font-size: 10px;
+            color: #00ffff;
+        }
+
+        body.light-mode .chart-label {
+            color: #006666;
+        }
+
+        .chart-bar-fill {
+            flex: 1;
+            height: 20px;
+            background: linear-gradient(90deg, #ff00ff, #00ffff);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .chart-value {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .search-toggle-btn {
+            background: rgba(255, 255, 0, 0.2);
+            border: 1px solid #ffff00;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .search-toggle-btn:hover {
+            background: rgba(255, 255, 0, 0.3);
+        }
+
+        .update-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #00ff00, #00ffff);
+            color: #000;
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 3001;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .update-banner.show {
+            display: block;
+        }
+
+        .update-banner button {
+            background: #000;
+            color: #00ff00;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .contact-edit-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+            z-index: 3002;
+            max-width: 90%;
+            width: 400px;
+            display: none;
+        }
+
+        body.light-mode .contact-edit-modal {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+
+        .contact-edit-modal.show {
+            display: block;
+        }
+
+        .modal-title {
+            color: #00ffff;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        body.light-mode .modal-title {
+            color: #006666;
+        }
+
+        .edit-field {
+            margin-bottom: 15px;
+        }
+
+        .edit-field label {
+            display: block;
+            color: #00ff00;
+            font-size: 11px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        body.light-mode .edit-field label {
+            color: #006600;
+        }
+
+        .edit-field input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 12px;
+        }
+
+        body.light-mode .edit-field input {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #00aaaa;
+            color: #006666;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #00ff00, #00ffff);
+            color: #000;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #666;
+            color: #00ffff;
+        }
+
+        body.light-mode .modal-btn.secondary {
+            color: #666;
+        }
+
+        .faq-panel {
+            background: rgba(255, 0, 255, 0.1);
+            border: 2px solid #ff00ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        body.light-mode .faq-panel {
+            background: rgba(255, 0, 255, 0.05);
+        }
+
+        .faq-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #ff00ff;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .faq-item:hover {
+            background: rgba(255, 0, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .faq-question {
+            color: #ff00ff;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        body.light-mode .faq-question {
+            color: #990099;
+        }
+
+        .faq-answer {
+            color: #00ffff;
+            font-size: 10px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        body.light-mode .faq-answer {
+            color: #006666;
+        }
+
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+
+        .rate-limit-warning {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.9);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 3003;
+            display: none;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .rate-limit-warning.show {
+            display: block;
+        }
+
+        .performance-indicator {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            z-index: 2999;
+            border: 1px solid #00ff00;
+        }
+
+        .csv-export-btn {
+            background: linear-gradient(135deg, #00ffff, #00ff00);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        .csv-export-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .calendar-picker-container {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        body.light-mode .calendar-picker-container {
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        body.light-mode .date-input {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #00aaaa;
+            color: #006666;
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .time-slot-btn {
+            padding: 10px;
+            background: rgba(255, 0, 255, 0.2);
+            border: 2px solid #ff00ff;
+            border-radius: 8px;
+            color: #ff00ff;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-slot-btn:hover {
+            background: rgba(255, 0, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .time-slot-btn.selected {
+            background: rgba(255, 0, 255, 0.6);
+            border-color: #00ff00;
+        }
+
+        .avatar-upload-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin: 10px auto;
+        }
+
+        .avatar-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #00ffff;
+            object-fit: cover;
+            cursor: pointer;
+            background: rgba(0, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .avatar-in-message {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover;
+            border: 2px solid currentColor;
+            vertical-align: middle;
+        }
+
+        .message-with-avatar {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .privacy-notice {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+            z-index: 5000;
+            max-width: 90%;
+            width: 500px;
+            display: none;
+        }
+
+        body.light-mode .privacy-notice {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+
+        .privacy-notice.show {
+            display: block;
+        }
+
+        .privacy-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 4999;
+            display: none;
+        }
+
+        .privacy-overlay.show {
+            display: block;
+        }
+
+        .privacy-title {
+            color: #00ffff;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        body.light-mode .privacy-title {
+            color: #006666;
+        }
+
+        .privacy-text {
+            color: #00ff00;
+            font-size: 13px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        body.light-mode .privacy-text {
+            color: #006600;
+        }
+
+        .privacy-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .privacy-btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .privacy-btn.accept {
+            background: linear-gradient(135deg, #00ff00, #00ffff);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .privacy-btn.accept:active {
+            transform: scale(0.95);
+        }
+
+        .privacy-btn.decline {
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .privacy-btn.decline:active {
+            transform: scale(0.95);
+        }
+
+        .theme-selector {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            padding: 15px;
+            display: none;
+            z-index: 200;
+            min-width: 200px;
+        }
+
+        body.light-mode .theme-selector {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .theme-selector.open {
+            display: block;
+        }
+
+        .theme-option {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-option.active {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .theme-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .theme-dark { background: linear-gradient(135deg, #0a0a0a, #1a1a1a); }
+        .theme-light { background: linear-gradient(135deg, #f0f0f0, #ffffff); }
+        .theme-neon-blue { background: linear-gradient(135deg, #001a33, #003366); }
+        .theme-neon-pink { background: linear-gradient(135deg, #330011, #660033); }
+        .theme-neon-green { background: linear-gradient(135deg, #001a00, #003300); }
+        .theme-cyberpunk { background: linear-gradient(135deg, #1a0033, #330066); }
+
+        body.theme-neon-blue {
+            background: #001a33;
+        }
+
+        body.theme-neon-pink {
+            background: #330011;
+        }
+
+        body.theme-neon-green {
+            background: #001a00;
+        }
+
+        body.theme-cyberpunk {
+            background: #1a0033;
+        }
+
+        .reset-confirmation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 3px solid #ff0000;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+            z-index: 4001;
+            max-width: 90%;
+            width: 400px;
+            display: none;
+        }
+
+        .reset-confirmation.show {
+            display: block;
+        }
+
+        .reset-title {
+            color: #ff0000;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .reset-text {
+            color: #ffff00;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .reset-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .reset-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .reset-btn.danger {
+            background: linear-gradient(135deg, #ff0000, #ff6600);
+            color: #fff;
+        }
+
+        .reset-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #666;
+            color: #00ffff;
+        }
+
+        .version-history {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+        }
+
+        .version-item {
+            border-left: 3px solid #00ff00;
+            padding: 10px;
+            margin: 8px 0;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        .version-number {
+            color: #00ffff;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .version-date {
+            color: #00ff00;
+            font-size: 10px;
+        }
+
+        .version-changes {
+            color: #ffff00;
+            font-size: 10px;
+            margin-top: 5px;
+            line-height: 1.6;
+        }
+
+        .ab-test-indicator {
+            position: fixed;
+            top: 10px;
+            right: 150px;
+            background: rgba(255, 0, 255, 0.2);
+            border: 2px solid #ff00ff;
+            border-radius: 15px;
+            padding: 4px 10px;
+            font-size: 9px;
+            color: #ff00ff;
+            z-index: 99;
+        }
+
+        body.light-mode .ab-test-indicator {
+            background: rgba(255, 0, 255, 0.1);
+            color: #990099;
+        }
+
+        .error-toast {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.9);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 3004;
+            display: none;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            max-width: 300px;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .error-toast.show {
+            display: block;
+        }
+
+        .error-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .collab-indicator {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 4px 10px;
+            font-size: 9px;
+            color: #00ff00;
+            display: inline-block;
+            margin-left: 10px;
+            animation: blink 2s infinite;
+        }
+
+        .typing-user {
+            font-size: 10px;
+            color: #00ffff;
+            font-style: italic;
+            padding: 5px 10px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            gap: 1%;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: rgba(255, 0, 255, 0.05);
+            border: 2px solid #ff00ff;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+        }
+
+        .chat-header {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 8px;
+            border-bottom: 1px solid #00ffff;
+        }
+
+        .chat-header h2 {
+            font-size: 12px;
+            color: #00ffff;
+        }
+
+        .chat-status {
+            font-size: 10px;
+            color: #00ff00;
+            margin-top: 4px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 12px;
+            line-height: 1.4;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            background: rgba(0, 255, 255, 0.15);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            align-self: flex-start;
+        }
+
+        .message.user {
+            background: rgba(255, 0, 255, 0.15);
+            border: 1px solid #ff00ff;
+            color: #ff00ff;
+            align-self: flex-end;
+        }
+
+        .message.system {
+            background: rgba(0, 255, 0, 0.15);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            align-self: center;
+            font-size: 10px;
+            max-width: 95%;
+            text-align: center;
+        }
+
+        .typing-indicator {
+            padding: 8px 12px;
+            background: rgba(0, 255, 255, 0.15);
+            border: 1px solid #00ffff;
+            border-radius: 12px;
+            align-self: flex-start;
+            font-size: 12px;
+            color: #00ffff;
+        }
+
+        .typing-indicator span {
+            animation: blink 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .input-area {
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid #00ffff;
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            border-radius: 20px;
+            color: #00ffff;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .input-area input::placeholder {
+            color: rgba(0, 255, 255, 0.5);
+        }
+
+        .input-area button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            border: none;
+            border-radius: 20px;
+            color: #000;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        .input-area button:active {
+            transform: scale(0.95);
+        }
+
+        .sidebar {
+            background: rgba(0, 255, 0, 0.05);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 8px;
+            max-height: 30vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .sidebar h3 {
+            font-size: 12px;
+            color: #00ff00;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .lead-info {
+            font-size: 10px;
+            line-height: 1.6;
+            color: #00ff00;
+        }
+
+        .lead-info div {
+            margin-bottom: 6px;
+            padding: 6px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .lead-info strong {
+            color: #00ffff;
+        }
+
+        .score {
+            display: inline-block;
+            padding: 2px 8px;
+            background: linear-gradient(135deg, #ff00ff, #00ff00);
+            border-radius: 12px;
+            color: #000;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .meeting-slot {
+            background: rgba(255, 0, 255, 0.15);
+            border: 1px solid #ff00ff;
+            padding: 6px;
+            border-radius: 4px;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .quick-btn {
+            padding: 6px 12px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            border-radius: 15px;
+            color: #00ffff;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: rgba(0, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            border-radius: 3px;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+            
+            .chat-container {
+                flex: 2;
+            }
+            
+            .sidebar {
+                flex: 1;
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Privacy Notice Overlay -->
+        <div class="privacy-overlay" id="privacyOverlay"></div>
+        
+        <!-- Privacy Notice -->
+        <div class="privacy-notice" id="privacyNotice">
+            <div class="privacy-title">🔒 Privacy & Data Notice</div>
+            <div class="privacy-text">
+                <p><strong>How We Use Your Data:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>This app stores data locally in your browser using localStorage</li>
+                    <li>No data is sent to external servers</li>
+                    <li>Your chat history, contact info, and preferences stay on your device</li>
+                    <li>You can clear all data anytime using the Reset button</li>
+                    <li>We respect your privacy and handle data responsibly</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>By continuing, you agree to local data storage for app functionality.</strong></p>
+            </div>
+            <div class="privacy-buttons">
+                <button class="privacy-btn decline" onclick="declinePrivacy()">Decline</button>
+                <button class="privacy-btn accept" onclick="acceptPrivacy()">Accept & Continue</button>
+            </div>
+        </div>
+
+        <!-- Reset Confirmation -->
+        <div class="reset-confirmation" id="resetConfirmation">
+            <div class="popup-overlay"></div>
+            <div class="reset-title">⚠️ Reset Application?</div>
+            <div class="reset-text">
+                This will permanently delete ALL data including:<br>
+                • Chat history<br>
+                • Lead data<br>
+                • Settings & preferences<br>
+                • Analytics & CRM records<br><br>
+                <strong>This action cannot be undone!</strong>
+            </div>
+            <div class="reset-buttons">
+                <button class="reset-btn cancel" onclick="closeResetConfirmation()">Cancel</button>
+                <button class="reset-btn danger" onclick="confirmReset()">Yes, Reset Everything</button>
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div class="error-toast" id="errorToast">
+            <div class="error-title">⚠️ Error</div>
+            <div id="errorMessage">Something went wrong</div>
+        </div>
+
+        <!-- AB Test Indicator -->
+        <div class="ab-test-indicator" id="abTestIndicator">
+            A/B Test: Variant <span id="variantName">A</span>
+        </div>
+
+        <!-- Update Banner -->
+        <div class="update-banner" id="updateBanner">
+            🎉 New version available! Update now for the latest features.
+            <button onclick="simulateUpdate()">Update Now</button>
+            <button onclick="dismissUpdate()">Dismiss</button>
+        </div>
+
+        <!-- Rate Limit Warning -->
+        <div class="rate-limit-warning" id="rateLimitWarning">
+            ⚠️ Slow down! Please wait 2 seconds between messages.
+        </div>
+
+        <!-- Performance Indicator -->
+        <div class="performance-indicator" id="perfIndicator">
+            Load: 0ms | Msg: 0ms
+        </div>
+
+        <!-- Offline Banner -->
+        <div class="offline-banner" id="offlineBanner">
+            ⚠️ You're offline. Messages will be queued and sent when connection returns.
+        </div>
+
+        <!-- Contact Edit Modal -->
+        <div id="contactEditModal" class="contact-edit-modal">
+            <div class="modal-title">📝 Review Your Information</div>
+            <div class="edit-field">
+                <label for="editName">Name</label>
+                <input type="text" id="editName" placeholder="Your name">
+            </div>
+            <div class="edit-field">
+                <label for="editEmail">Email</label>
+                <input type="email" id="editEmail" placeholder="your.email@example.com">
+            </div>
+            <div class="edit-field">
+                <label for="editPhone">Phone</label>
+                <input type="tel" id="editPhone" placeholder="123-456-7890">
+            </div>
+            <div class="edit-field">
+                <label for="editCompany">Company</label>
+                <input type="text" id="editCompany" placeholder="Company name">
+            </div>
+            <div class="edit-field">
+                <label for="editBudget">Budget</label>
+                <input type="text" id="editBudget" placeholder="$10k">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeContactEdit()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveContactEdit()">Save & Continue</button>
+            </div>
+        </div>
+
+        <div class="popup-overlay" id="contactEditOverlay" style="display: none;" onclick="closeContactEdit()"></div>
+
+        <!-- Analytics Toggle -->
+        <button class="analytics-toggle" onclick="toggleAnalyticsPanel()">ANALYTICS</button>
+
+        <!-- Analytics Panel -->
+        <div class="analytics-panel" id="analyticsPanel">
+            <div class="debug-title">📊 ANALYTICS DASHBOARD</div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Total Chats Started</div>
+                <div class="stat-number" id="totalChats">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Meetings Booked</div>
+                <div class="stat-number" id="totalMeetings">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Average Score</div>
+                <div class="stat-number" id="avgScore">0%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Conversion Rate</div>
+                <div class="stat-number" id="conversionRate">0%</div>
+            </div>
+
+            <div class="chart-container">
+                <div style="color: #ff00ff; font-size: 14px; margin-bottom: 10px; font-weight: bold;">Score Distribution</div>
+                <div class="chart-bar">
+                    <div class="chart-label">0-25% (Cold)</div>
+                    <div class="chart-bar-fill" style="width: 0%" id="scoreCold">
+                        <div class="chart-value">0</div>
+                    </div>
+                </div>
+                <div class="chart-bar">
+                    <div class="chart-label">26-50% (Warm)</div>
+                    <div class="chart-bar-fill" style="width: 0%" id="scoreWarm">
+                        <div class="chart-value">0</div>
+                    </div>
+                </div>
+                <div class="chart-bar">
+                    <div class="chart-label">51-75% (Hot)</div>
+                    <div class="chart-bar-fill" style="width: 0%" id="scoreHot">
+                        <div class="chart-value">0</div>
+                    </div>
+                </div>
+                <div class="chart-bar">
+                    <div class="chart-label">76-100% (Qualified)</div>
+                    <div class="chart-bar-fill" style="width: 0%" id="scoreQualified">
+                        <div class="chart-value">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Positive Feedback</div>
+                <div class="stat-number" id="positiveFeedback">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Negative Feedback</div>
+                <div class="stat-number" id="negativeFeedback">0</div>
+            </div>
+
+            <button class="download-btn" onclick="exportAnalytics()" style="margin-top: 10px;">
+                📈 EXPORT ANALYTICS
+            </button>
+        </div>
+
+        <!-- Debug Toggle -->
+        <button class="debug-toggle" onclick="toggleDebugPanel()">CRM DEBUG</button>
+
+        <!-- Debug Panel -->
+        <div class="debug-panel" id="debugPanel">
+            <div class="debug-title">🔧 CRM DEBUG PANEL</div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong style="color: #00ffff;">Bot Customization</strong>
+                <div class="customization-form">
+                    <input type="text" id="botNameInput" placeholder="Bot Name (e.g., Alex)" value="AI Assistant">
+                    <select id="botColorInput">
+                        <option value="#00ffff">Cyan (Default)</option>
+                        <option value="#ff00ff">Magenta</option>
+                        <option value="#00ff00">Green</option>
+                        <option value="#ffff00">Yellow</option>
+                        <option value="#ff0080">Pink</option>
+                    </select>
+                    <button onclick="applyBotCustomization()">Apply Customization</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong style="color: #00ffff;">Stored Leads: </strong>
+                <span id="leadCount" style="color: #00ff00;">0</span>
+            </div>
+            
+            <div id="leadsList"></div>
+
+            <button class="csv-export-btn" onclick="exportLeadsAsCSV()">
+                📊 EXPORT LEADS AS CSV
+            </button>
+
+            <div style="margin-top: 20px;">
+                <strong style="color: #00ffff;">FAQ Library</strong>
+                <div class="faq-panel" id="faqPanel"></div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <strong style="color: #00ffff;">Event Log</strong>
+                <div class="event-log" id="eventLog"></div>
+            </div>
+
+            <button class="download-btn" onclick="exportCRMData()" style="margin-top: 10px;">
+                📊 EXPORT CRM DATA
+            </button>
+
+            <div style="margin-top: 20px;">
+                <strong style="color: #00ffff;">Version History</strong>
+                <div class="version-history" id="versionHistory"></div>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>2026 WEBSITE CHAT TO QUALIFIED MEETING</h1>
+            <button class="theme-toggle" onclick="toggleThemeSelector()">🎨 THEMES</button>
+            <button class="personality-toggle" onclick="togglePersonality()" id="personalityBtn">
+                🎭 FRIENDLY MODE
+            </button>
+            
+            <!-- Theme Selector Dropdown -->
+            <div class="theme-selector" id="themeSelector">
+                <div class="theme-option active" data-theme="dark" onclick="applyTheme('dark')">
+                    <div class="theme-preview theme-dark"></div>
+                    <span>Dark Mode</span>
+                </div>
+                <div class="theme-option" data-theme="light" onclick="applyTheme('light')">
+                    <div class="theme-preview theme-light"></div>
+                    <span>Light Mode</span>
+                </div>
+                <div class="theme-option" data-theme="neon-blue" onclick="applyTheme('neon-blue')">
+                    <div class="theme-preview theme-neon-blue"></div>
+                    <span>Neon Blue</span>
+                </div>
+                <div class="theme-option" data-theme="neon-pink" onclick="applyTheme('neon-pink')">
+                    <div class="theme-preview theme-neon-pink"></div>
+                    <span>Neon Pink</span>
+                </div>
+                <div class="theme-option" data-theme="neon-green" onclick="applyTheme('neon-green')">
+                    <div class="theme-preview theme-neon-green"></div>
+                    <span>Neon Green</span>
+                </div>
+                <div class="theme-option" data-theme="cyberpunk" onclick="applyTheme('cyberpunk')">
+                    <div class="theme-preview theme-cyberpunk"></div>
+                    <span>Cyberpunk</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>AI Sales Assistant
+                        <span class="collab-indicator" id="collabIndicator" style="display: none;">
+                            👥 Multi-user mode
+                        </span>
+                    </h2>
+                    <div class="chat-status" id="status">● Online - Ready to help</div>
+                </div>
+                <div class="search-container" id="searchContainer">
+                    <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search messages..." 
+                           onkeyup="searchMessages()" aria-label="Search chat messages">
+                </div>
+                <div id="notificationPrompt" class="notification-permission" style="display: none;">
+                    📅 Get reminded about your booked meeting!
+                    <button onclick="requestNotificationPermission()">Enable Notifications</button>
+                </div>
+                <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
+                <div class="input-area" role="form">
+                    <div class="emoji-picker-container">
+                        <button class="emoji-btn" onclick="toggleEmojiPicker()" aria-label="Emoji picker">😊</button>
+                        <div class="emoji-picker" id="emojiPicker">
+                            <div class="emoji-grid" id="emojiGrid"></div>
+                        </div>
+                    </div>
+                    <label for="fileUpload" class="file-upload-btn" aria-label="Upload file">📎
+                        <input type="file" id="fileUpload" style="display: none;" onchange="handleFileUpload(event)" 
+                               accept="image/*,.pdf,.doc,.docx" aria-label="File upload input">
+                    </label>
+                    <button class="search-toggle-btn" onclick="toggleSearch()" aria-label="Toggle search">🔍</button>
+                    <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Voice Input" aria-label="Voice input">🎤</button>
+                    <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" 
+                           aria-label="Message input" role="textbox">
+                    <button onclick="sendMessage()" aria-label="Send message">SEND</button>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h3>LEAD INTELLIGENCE</h3>
+                
+                <!-- Avatar Upload -->
+                <div class="avatar-upload-container">
+                    <label for="avatarUpload">
+                        <div class="avatar-preview" id="avatarPreview">👤</div>
+                    </label>
+                    <input type="file" id="avatarUpload" accept="image/*" style="display: none;" 
+                           onchange="handleAvatarUpload(event)" aria-label="Upload profile picture">
+                </div>
+                
+                <div class="lead-info" id="leadInfo">
+                    <div>Qualification Score: <span class="score" id="score">0%</span></div>
+                    <div class="score-bar">
+                        <div class="score-fill" id="scoreFill" style="width: 0%">0%</div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-label">Questions Progress</div>
+                        <div class="progress-bar-outer">
+                            <div class="progress-bar-inner" id="progressBar"></div>
+                        </div>
+                        <div style="font-size: 9px; color: #00ff00; margin-top: 4px;" id="progressText">0 / 8 completed</div>
+                    </div>
+                    
+                    <div><strong>Status:</strong> <span id="leadStatus">Gathering info...</span></div>
+                    <div><strong>Language:</strong> <span id="detectedLang">English</span></div>
+                    <div><strong>Bot:</strong> <span id="botNameDisplay">AI Assistant</span></div>
+                    <div id="detectedInfo"></div>
+                    <div id="meetingInfo" style="display: none;"></div>
+                    <button class="download-btn" onclick="downloadTranscript()" style="display: none;" id="downloadBtn">
+                        📥 DOWNLOAD TRANSCRIPT
+                    </button>
+                    <button class="share-btn" onclick="shareChat()" id="shareBtn">
+                        🔗 SHARE CHAT
+                    </button>
+                    <button class="share-btn" onclick="openContactEdit()" id="reviewBtn" style="display: none; background: linear-gradient(135deg, #ff00ff, #00ffff);">
+                        ✏️ REVIEW INFO
+                    </button>
+                    <button class="share-btn" onclick="openResetConfirmation()" style="background: linear-gradient(135deg, #ff0000, #ff6600);">
+                        🔄 RESET APP
+                    </button>
+                </div>
+                <div class="quick-actions" id="quickActions" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Exit Intent Popup -->
+        <div id="exitPopup" style="display: none;">
+            <div class="popup-overlay" onclick="closeExitPopup()"></div>
+            <div class="exit-intent-popup">
+                <div class="popup-title">⏰ Still interested?</div>
+                <div class="popup-text">Don't leave yet! Want me to send this conversation to your email so you can continue later?</div>
+                <input type="email" class="popup-input" id="popupEmail" placeholder="Enter your email...">
+                <div class="popup-buttons">
+                    <button class="popup-btn secondary" onclick="closeExitPopup()">No Thanks</button>
+                    <button class="popup-btn primary" onclick="sendExitEmail()">📧 Send Me Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        const state = {
+            messages: [],
+            leadData: {
+                name: null,
+                email: null,
+                phone: null,
+                company: null,
+                interest: null,
+                budget: null,
+                timeline: null,
+                painPoints: []
+            },
+            qualificationScore: 0,
+            conversationStage: 'greeting',
+            meetingBooked: false,
+            questionAsked: false,
+            language: 'en',
+            theme: 'dark',
+            lastActivity: Date.now(),
+            exitPopupShown: false,
+            questionsAnswered: 0,
+            totalQuestions: 8,
+            isOnline: navigator.onLine,
+            queuedMessages: [],
+            botName: 'AI Assistant',
+            botColor: '#00ffff',
+            eventLog: [],
+            uploadedFiles: [],
+            personality: 'friendly', // friendly or formal
+            feedback: {
+                positive: 0,
+                negative: 0,
+                responses: []
+            },
+            userAvatar: null,
+            draftMessage: '',
+            abTestVariant: null,
+            collabMode: false,
+            privacyAccepted: false
+        };
+
+        // Version History
+        const versionHistory = [
+            { version: '5.0.0', date: '2026-02-15', changes: ['Auto-save drafts', 'User avatars', 'Multi-user collab', 'Custom themes', 'Error handling', 'A/B testing', 'Privacy notice', 'Reset button', 'Version history'] },
+            { version: '4.0.0', date: '2026-02-14', changes: ['CSV export', 'Email simulation', 'Calendar integration', 'Contact edit', 'FAQ system', 'Rate limiting', 'XSS protection', 'Performance metrics', 'Update banner'] },
+            { version: '3.0.0', date: '2026-02-13', changes: ['Feedback system', 'Analytics dashboard', 'Emoji picker', 'File upload', 'Notifications', 'Search', 'Personality modes', 'CRM API', 'Accessibility'] },
+            { version: '2.0.0', date: '2026-02-12', changes: ['CRM simulation', 'Sentiment analysis', 'Adaptive questions', 'Share chat', 'Voice input', 'Event logging', 'Bot customization', 'Offline mode', 'Progress bar'] },
+            { version: '1.0.0', date: '2026-02-11', changes: ['Initial release', 'Chat interface', 'Lead qualification', 'Meeting booking', 'Multi-language', 'Dark/Light mode', 'Mobile responsive'] }
+        ];
+
+        // A/B Test Variants
+        const abTestVariants = {
+            A: { name: 'Friendly', greeting: "👋 Hey there! I'm super excited to help you today! What brings you here?", style: 'casual' },
+            B: { name: 'Professional', greeting: "Good day! I'm here to assist you with finding the perfect solution. How may I help you?", style: 'formal' },
+            C: { name: 'Question-led', greeting: "Hi! Looking to grow your business? Let's chat about your goals! 🚀", style: 'question' },
+            D: { name: 'Value-focused', greeting: "Welcome! Ready to unlock better results for your business? I'm here to help! 💡", style: 'value' }
+        };
+
+        // AB Test tracking
+        let abTestResults = JSON.parse(localStorage.getItem('abTestResults')) || {
+            A: { views: 0, conversions: 0 },
+            B: { views: 0, conversions: 0 },
+            C: { views: 0, conversions: 0 },
+            D: { views: 0, conversions: 0 }
+        };
+
+        // Analytics data
+        let analytics = JSON.parse(localStorage.getItem('analytics')) || {
+            totalChats: 0,
+            totalMeetings: 0,
+            scores: [],
+            feedback: { positive: 0, negative: 0 },
+            scoreDistribution: { cold: 0, warm: 0, hot: 0, qualified: 0 }
+        };
+
+        // Emoji list
+        const emojis = ['😀','😃','😄','😁','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥳','😏','😒','😞','😔','😟','😕','🙁','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','👍','👎','👏','🙌','👋','🤝','🙏','💪','🎉','🎊','🎈','🎁','🏆','🥇','⭐','✨','💯','🔥','💝','💖','💗','💓','💕','💘','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎'];
+
+        // Personality modes
+        const personalities = {
+            friendly: {
+                greeting: "Hey there! 😊 I'm super excited to chat with you today!",
+                transition: "Awesome! 🎉",
+                closing: "You rock! 🌟"
+            },
+            formal: {
+                greeting: "Good day. I am here to assist you with your inquiry.",
+                transition: "Understood. Proceeding to next step.",
+                closing: "Thank you for your time."
+            }
+        };
+
+        // FAQ Library
+        const faqData = [
+            {
+                question: "What services do you offer?",
+                answer: "We offer comprehensive business solutions including marketing automation, CRM integration, lead generation, and consulting services."
+            },
+            {
+                question: "How much does it cost?",
+                answer: "Our pricing varies based on your needs. Packages range from $5k to $100k+ depending on scope and customization required."
+            },
+            {
+                question: "How long does implementation take?",
+                answer: "Typical implementation takes 2-6 weeks depending on complexity. We can expedite for urgent projects."
+            },
+            {
+                question: "Do you offer support?",
+                answer: "Yes! We provide 24/7 support for all clients, including dedicated account managers and technical assistance."
+            },
+            {
+                question: "Can I get a demo?",
+                answer: "Absolutely! Book a meeting with us and we'll provide a personalized demo tailored to your needs."
+            },
+            {
+                question: "What industries do you work with?",
+                answer: "We work with clients across all industries including tech, healthcare, finance, retail, and more."
+            },
+            {
+                question: "Do you offer custom solutions?",
+                answer: "Yes! All our solutions are customizable to fit your specific business requirements."
+            },
+            {
+                question: "How do I get started?",
+                answer: "Simply book a meeting with us through this chat, and we'll guide you through the onboarding process!"
+            }
+        ];
+
+        // Performance metrics
+        let performanceMetrics = {
+            loadTime: 0,
+            messageRenderTimes: [],
+            avgRenderTime: 0
+        };
+
+        // Rate limiting
+        let lastMessageTime = 0;
+        const MESSAGE_COOLDOWN = 2000; // 2 seconds
+
+        // XSS Protection - HTML entity encoding
+        function sanitizeInput(input) {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML;
+        }
+
+        function sanitizeHTML(html) {
+            return html
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+                .replace(/javascript:/gi, '')
+                .replace(/on\w+=/gi, '');
+        }
+
+        // Conversation flow stages
+        const stages = {
+            greeting: ['interest', 'name'],
+            name: ['email', 'company'],
+            email: ['phone', 'budget'],
+            phone: ['budget', 'timeline'],
+            company: ['budget', 'timeline'],
+            interest: ['name', 'email'],
+            budget: ['timeline', 'pain'],
+            timeline: ['pain', 'meeting'],
+            pain: ['meeting'],
+            meeting: ['confirmation']
+        };
+
+        // Multi-language support
+        const greetings = {
+            en: ["👋 Hey there! I'm your AI sales assistant. What brings you here today?",
+                 "Hello! 🚀 I'm here to help you find the perfect solution. What are you looking for?",
+                 "Hi! 💡 Let's chat about how we can help your business grow. What's on your mind?"],
+            es: ["👋 ¡Hola! Soy tu asistente de ventas AI. ¿Qué te trae por aquí hoy?",
+                 "¡Hola! 🚀 Estoy aquí para ayudarte a encontrar la solución perfecta. ¿Qué estás buscando?"],
+            fr: ["👋 Salut! Je suis votre assistant commercial AI. Que puis-je faire pour vous?",
+                 "Bonjour! 🚀 Je suis là pour vous aider à trouver la solution parfaite."],
+            de: ["👋 Hallo! Ich bin Ihr KI-Vertriebsassistent. Wie kann ich Ihnen helfen?",
+                 "Hallo! 🚀 Ich bin hier, um Ihnen zu helfen, die perfekte Lösung zu finden."],
+            zh: ["👋 您好！我是您的AI销售助手。今天有什么可以帮您的？",
+                 "您好！🚀 我在这里帮您找到完美的解决方案。"],
+            ja: ["👋 こんにちは！AIセールスアシスタントです。本日はどのようなご用件でしょうか？",
+                 "こんにちは！🚀 最適なソリューションを見つけるお手伝いをします。"],
+            pt: ["👋 Olá! Sou seu assistente de vendas AI. O que te traz aqui hoje?",
+                 "Olá! 🚀 Estou aqui para ajudá-lo a encontrar a solução perfeita."],
+            it: ["👋 Ciao! Sono il tuo assistente alle vendite AI. Come posso aiutarti oggi?",
+                 "Ciao! 🚀 Sono qui per aiutarti a trovare la soluzione perfetta."]
+        };
+
+        const languageNames = {
+            en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch',
+            zh: '中文', ja: '日本語', pt: 'Português', it: 'Italiano'
+        };
+
+        // Sentiment analysis keywords
+        const sentimentKeywords = {
+            positive: ['great', 'awesome', 'excellent', 'perfect', 'love', 'amazing', 'fantastic', 'wonderful', 'good', 'yes', 'sure', 'absolutely', 'definitely', 'excited', 'happy', 'interested'],
+            negative: ['bad', 'terrible', 'horrible', 'awful', 'hate', 'no', 'never', 'cant', 'won\'t', 'don\'t', 'angry', 'frustrated', 'disappointed', 'worried', 'concern', 'problem', 'issue'],
+            neutral: ['okay', 'ok', 'maybe', 'perhaps', 'think', 'consider', 'not sure', 'unsure']
+        };
+
+        // CRM Storage
+        let crmLeads = JSON.parse(localStorage.getItem('crmLeads')) || [];
+
+        // Voice recognition
+        let recognition = null;
+        let isRecording = false;
+
+        // AI responses based on context
+        const responses = {
+            greeting: [
+                "👋 Hey there! I'm your AI sales assistant. What brings you here today?",
+                "Hello! 🚀 I'm here to help you find the perfect solution. What are you looking for?",
+                "Hi! 💡 Let's chat about how we can help your business grow. What's on your mind?"
+            ],
+            interest: [
+                "That's awesome! 🎯 To better assist you, may I know your name?",
+                "Great! Before we dive deeper, what should I call you?",
+                "Perfect! And who am I speaking with?"
+            ],
+            name: [
+                "Nice to meet you, {name}! 📧 What's the best email to reach you at?",
+                "Pleasure, {name}! Could you share your email so I can send you some resources?",
+                "Thanks {name}! What email should I use for follow-up?"
+            ],
+            email: [
+                "Perfect! 📱 And what's a good phone number to reach you?",
+                "Got it! What's your phone number in case we need to connect quickly?",
+                "Thanks! May I have your phone number as well?"
+            ],
+            phone: [
+                "Excellent! 🏢 What company are you with?",
+                "Great! And which company do you represent?",
+                "Thanks! What's your company name?"
+            ],
+            company: [
+                "Nice! 💰 What's your budget range for this project?",
+                "Perfect! Do you have a budget in mind?",
+                "Got it! What budget are you working with?"
+            ],
+            budget: [
+                "Sounds good! ⏰ When are you looking to get started?",
+                "Great! What's your ideal timeline?",
+                "Perfect! When would you like to kick this off?"
+            ],
+            timeline: [
+                "Awesome! 🎯 What are the main challenges you're trying to solve?",
+                "Perfect! What pain points are you experiencing right now?",
+                "Great! What problems are keeping you up at night?"
+            ],
+            pain: [
+                "I understand! 📅 Based on everything you've shared, I think we can really help. Would you like to schedule a quick 15-min call to discuss solutions?",
+                "That makes sense! 🚀 Let's set up a brief meeting to explore how we can solve these challenges. Sound good?",
+                "Got it! 💡 I'd love to show you some tailored solutions. Can we book a short discovery call?"
+            ],
+            meeting: [
+                "Fantastic! 🎉 Let me suggest some time slots...",
+                "Perfect! 📆 Here are some available times...",
+                "Great! ⭐ Let me pull up my calendar..."
+            ]
+        };
+
+        // Quick reply suggestions for each stage
+        const quickReplies = {
+            greeting: [
+                "🚀 Looking for solutions",
+                "💡 Need help with my business",
+                "📈 Want to grow",
+                "🎯 Exploring options"
+            ],
+            interest: [
+                "John Smith",
+                "Sarah Johnson",
+                "Mike Chen"
+            ],
+            email: [
+                "📧 Enter email manually",
+                "💼 Use work email",
+                "📱 Use personal email"
+            ],
+            phone: [
+                "📱 Enter phone manually",
+                "☎️ Call me later",
+                "💬 Prefer email"
+            ],
+            company: [
+                "Startup (<10 employees)",
+                "Small Business (10-50)",
+                "Mid-size (50-500)",
+                "Enterprise (500+)"
+            ],
+            budget: [
+                "$5k - $10k",
+                "$10k - $50k",
+                "$50k - $100k",
+                "$100k+"
+            ],
+            timeline: [
+                "ASAP / This week",
+                "Within 1 month",
+                "1-3 months",
+                "3-6 months"
+            ],
+            pain: [
+                "Need more leads",
+                "Want to automate",
+                "Improve efficiency",
+                "Scale operations"
+            ],
+            meeting: [
+                "Yes, let's talk!",
+                "Sure, show times",
+                "Absolutely!"
+            ]
+        };
+
+        // Initialize
+        window.onload = function() {
+            const loadStartTime = performance.now();
+            
+            // Check privacy acceptance first
+            const privacyAccepted = localStorage.getItem('privacyAccepted');
+            if (!privacyAccepted) {
+                showPrivacyNotice();
+                return;
+            }
+            state.privacyAccepted = true;
+            
+            // Select AB test variant
+            selectABTestVariant();
+            
+            // Restore draft message
+            restoreDraft();
+            document.getElementById('userInput').addEventListener('input', saveDraft);
+            
+            detectLanguage();
+            loadTheme();
+            loadBotCustomization();
+            loadState();
+            loadAvatar();
+            initializeVoiceRecognition();
+            setupOfflineDetection();
+            initializeEmojiPicker();
+            setupKeyboardNavigation();
+            initializeFAQ();
+            initializeVersionHistory();
+            
+            // Log version info
+            console.log(`%c🚀 Chat to Meeting App v${versionHistory[0].version}`, 'color: #00ffff; font-size: 16px; font-weight: bold');
+            console.log('%cVersion History:', 'color: #00ff00; font-size: 14px');
+            versionHistory.forEach(v => {
+                console.log(`  v${v.version} (${v.date}): ${v.changes.length} changes`);
+            });
+            
+            // Initialize analytics
+            if (analytics.totalChats === 0) {
+                analytics.totalChats = 1;
+            } else {
+                analytics.totalChats++;
+            }
+            saveAnalytics();
+            updateAnalyticsDashboard();
+            
+            // Use AB test greeting
+            if (state.messages.length === 0) {
+                logEvent('App initialized', { variant: state.abTestVariant });
+                setTimeout(() => {
+                    const greeting = abTestVariants[state.abTestVariant].greeting;
+                    addBotMessage(greeting);
+                    showQuickRepliesForStage('greeting');
+                }, 500);
+            } else {
+                renderMessages();
+                updateLeadInfo();
+                updateProgressBar();
+            }
+            
+            startInactivityMonitor();
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            updateCRMPanel();
+            
+            // Performance tracking
+            const loadEndTime = performance.now();
+            performanceMetrics.loadTime = Math.round(loadEndTime - loadStartTime);
+            updatePerformanceIndicator();
+            console.log(`[PERFORMANCE] Page load time: ${performanceMetrics.loadTime}ms`);
+            
+            // Random features
+            if (Math.random() < 0.1) {
+                setTimeout(showUpdateBanner, 5000);
+            }
+            if (Math.random() < 0.05) {
+                setTimeout(enableCollabMode, 3000);
+            }
+        };
+
+        // Save/Load state
+        function saveState() {
+            localStorage.setItem('chatState', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('chatState');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                Object.assign(state, loaded);
+            }
+        }
+
+        // Analytics Management
+        function saveAnalytics() {
+            localStorage.setItem('analytics', JSON.stringify(analytics));
+        }
+
+        function updateAnalyticsDashboard() {
+            document.getElementById('totalChats').textContent = analytics.totalChats;
+            document.getElementById('totalMeetings').textContent = analytics.totalMeetings;
+            
+            const avgScore = analytics.scores.length > 0 
+                ? Math.round(analytics.scores.reduce((a, b) => a + b, 0) / analytics.scores.length)
+                : 0;
+            document.getElementById('avgScore').textContent = avgScore + '%';
+            
+            const conversionRate = analytics.totalChats > 0
+                ? Math.round((analytics.totalMeetings / analytics.totalChats) * 100)
+                : 0;
+            document.getElementById('conversionRate').textContent = conversionRate + '%';
+            
+            // Update score distribution chart
+            const total = Object.values(analytics.scoreDistribution).reduce((a, b) => a + b, 0) || 1;
+            
+            const coldPct = (analytics.scoreDistribution.cold / total) * 100;
+            const warmPct = (analytics.scoreDistribution.warm / total) * 100;
+            const hotPct = (analytics.scoreDistribution.hot / total) * 100;
+            const qualifiedPct = (analytics.scoreDistribution.qualified / total) * 100;
+            
+            document.getElementById('scoreCold').style.width = coldPct + '%';
+            document.getElementById('scoreCold').querySelector('.chart-value').textContent = analytics.scoreDistribution.cold;
+            
+            document.getElementById('scoreWarm').style.width = warmPct + '%';
+            document.getElementById('scoreWarm').querySelector('.chart-value').textContent = analytics.scoreDistribution.warm;
+            
+            document.getElementById('scoreHot').style.width = hotPct + '%';
+            document.getElementById('scoreHot').querySelector('.chart-value').textContent = analytics.scoreDistribution.hot;
+            
+            document.getElementById('scoreQualified').style.width = qualifiedPct + '%';
+            document.getElementById('scoreQualified').querySelector('.chart-value').textContent = analytics.scoreDistribution.qualified;
+            
+            // Update feedback
+            document.getElementById('positiveFeedback').textContent = analytics.feedback.positive;
+            document.getElementById('negativeFeedback').textContent = analytics.feedback.negative;
+        }
+
+        function exportAnalytics() {
+            const data = JSON.stringify(analytics, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            logEvent('Analytics exported');
+        }
+
+        function toggleAnalyticsPanel() {
+            const panel = document.getElementById('analyticsPanel');
+            panel.classList.toggle('open');
+            updateAnalyticsDashboard();
+            logEvent('Analytics panel toggled');
+        }
+
+        // Event Logging
+        function logEvent(eventName, data = {}) {
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                event: eventName,
+                data: data
+            };
+            
+            state.eventLog.push(logEntry);
+            console.log(`[EVENT] ${eventName}:`, data);
+            
+            // Update debug panel
+            updateEventLog();
+            saveState();
+        }
+
+        function updateEventLog() {
+            const logDiv = document.getElementById('eventLog');
+            if (logDiv) {
+                const recentLogs = state.eventLog.slice(-20).reverse();
+                logDiv.innerHTML = recentLogs.map(log => 
+                    `<div>[${new Date(log.timestamp).toLocaleTimeString()}] ${log.event}</div>`
+                ).join('');
+            }
+        }
+
+        // Bot Customization
+        function loadBotCustomization() {
+            const savedBot = localStorage.getItem('botCustomization');
+            if (savedBot) {
+                const custom = JSON.parse(savedBot);
+                state.botName = custom.name || 'AI Assistant';
+                state.botColor = custom.color || '#00ffff';
+                applyBotStyles();
+            }
+        }
+
+        function applyBotCustomization() {
+            const name = document.getElementById('botNameInput').value.trim();
+            const color = document.getElementById('botColorInput').value;
+            
+            if (name) {
+                state.botName = name;
+                state.botColor = color;
+                
+                localStorage.setItem('botCustomization', JSON.stringify({
+                    name: state.botName,
+                    color: state.botColor
+                }));
+                
+                applyBotStyles();
+                logEvent('Bot customized', { name, color });
+                alert(`Bot customized! Name: ${name}, Color: ${color}`);
+            }
+        }
+
+        function applyBotStyles() {
+            document.getElementById('botNameDisplay').textContent = state.botName;
+            
+            // Apply color to bot messages
+            const style = document.createElement('style');
+            style.id = 'bot-custom-style';
+            const existing = document.getElementById('bot-custom-style');
+            if (existing) existing.remove();
+            
+            style.textContent = `
+                .message.bot {
+                    border-color: ${state.botColor} !important;
+                    color: ${state.botColor} !important;
+                }
+                .chat-header h2 {
+                    color: ${state.botColor} !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Offline Detection
+        function setupOfflineDetection() {
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            
+            // Check initial state
+            updateOnlineStatus();
+        }
+
+        function updateOnlineStatus() {
+            state.isOnline = navigator.onLine;
+            const banner = document.getElementById('offlineBanner');
+            
+            if (!state.isOnline) {
+                banner.classList.add('show');
+                logEvent('Went offline');
+            } else {
+                banner.classList.remove('show');
+            }
+        }
+
+        function handleOffline() {
+            updateOnlineStatus();
+            addSystemMessage('⚠️ Connection lost. Your messages will be queued.');
+        }
+
+        function handleOnline() {
+            updateOnlineStatus();
+            addSystemMessage('✅ Connection restored!');
+            logEvent('Back online');
+            
+            // Send queued messages
+            if (state.queuedMessages.length > 0) {
+                addSystemMessage(`📤 Sending ${state.queuedMessages.length} queued message(s)...`);
+                state.queuedMessages.forEach(msg => {
+                    processUserMessage(msg);
+                });
+                state.queuedMessages = [];
+                saveState();
+            }
+        }
+
+        // Language detection
+        function detectLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const langCode = browserLang.split('-')[0];
+            
+            // Check if we support this language
+            if (greetings[langCode]) {
+                state.language = langCode;
+            } else {
+                state.language = 'en';
+            }
+            
+            document.getElementById('detectedLang').textContent = languageNames[state.language] || 'English';
+            saveState();
+        }
+
+        // Theme management
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                state.theme = 'light';
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            state.theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+            localStorage.setItem('theme', state.theme);
+            saveState();
+        }
+
+        // Inactivity monitoring
+        let inactivityTimer;
+        
+        function startInactivityMonitor() {
+            resetInactivityTimer();
+            
+            // Reset timer on user activity
+            ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(event => {
+                document.addEventListener(event, resetInactivityTimer);
+            });
+        }
+
+        function resetInactivityTimer() {
+            state.lastActivity = Date.now();
+            clearTimeout(inactivityTimer);
+            
+            // Show exit intent after 30 seconds of inactivity
+            inactivityTimer = setTimeout(() => {
+                if (!state.exitPopupShown && !state.meetingBooked) {
+                    showExitPopup();
+                }
+            }, 30000);
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden && !state.exitPopupShown && !state.meetingBooked) {
+                // User switched tabs - show exit intent
+                setTimeout(() => {
+                    if (document.hidden) {
+                        showExitPopup();
+                    }
+                }, 2000);
+            }
+        }
+
+        function showExitPopup() {
+            if (state.exitPopupShown) return;
+            state.exitPopupShown = true;
+            document.getElementById('exitPopup').style.display = 'block';
+            
+            // Pre-fill email if we have it
+            if (state.leadData.email) {
+                document.getElementById('popupEmail').value = state.leadData.email;
+            }
+            saveState();
+        }
+
+        function closeExitPopup() {
+            document.getElementById('exitPopup').style.display = 'none';
+        }
+
+        function sendExitEmail() {
+            const email = document.getElementById('popupEmail').value;
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Store email if not already captured
+            if (!state.leadData.email) {
+                state.leadData.email = email;
+                state.qualificationScore += 20;
+                addSystemMessage(`✓ Email captured: ${email}`);
+            }
+            
+            addSystemMessage(`📧 Conversation link sent to ${email}!`);
+            closeExitPopup();
+            saveState();
+            updateLeadInfo();
+        }
+
+        // Sentiment Analysis
+        function analyzeSentiment(message) {
+            const lowered = message.toLowerCase();
+            let positiveCount = 0;
+            let negativeCount = 0;
+            let neutralCount = 0;
+            
+            sentimentKeywords.positive.forEach(word => {
+                if (lowered.includes(word)) positiveCount++;
+            });
+            
+            sentimentKeywords.negative.forEach(word => {
+                if (lowered.includes(word)) negativeCount++;
+            });
+            
+            sentimentKeywords.neutral.forEach(word => {
+                if (lowered.includes(word)) neutralCount++;
+            });
+            
+            let sentiment = 'neutral';
+            if (positiveCount > negativeCount && positiveCount > neutralCount) {
+                sentiment = 'positive';
+            } else if (negativeCount > positiveCount) {
+                sentiment = 'negative';
+            }
+            
+            logEvent('Sentiment analyzed', { message: message.substring(0, 50), sentiment });
+            return sentiment;
+        }
+
+        function getSentimentResponse(sentiment) {
+            const responses = {
+                positive: [
+                    "That's great to hear! 😊",
+                    "Wonderful! I'm glad you're enthusiastic about this.",
+                    "Excellent! Your positive attitude will help us find the perfect solution."
+                ],
+                negative: [
+                    "I understand your concern. Let's work together to address this. 💪",
+                    "I hear you. We're here to help make things better.",
+                    "Thank you for sharing that. Let me see how we can improve the situation."
+                ],
+                neutral: [
+                    "I appreciate you sharing that.",
+                    "Got it, let's continue.",
+                    "Understood, let's move forward."
+                ]
+            };
+            
+            const options = responses[sentiment] || responses.neutral;
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        // Message handling
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            let message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Rate limiting
+            const now = Date.now();
+            if (now - lastMessageTime < MESSAGE_COOLDOWN) {
+                showRateLimitWarning();
+                return;
+            }
+            lastMessageTime = now;
+            
+            // XSS Protection
+            message = sanitizeInput(message);
+            
+            resetInactivityTimer();
+            logEvent('Message sent', { length: message.length });
+            
+            // Check if offline
+            if (!state.isOnline) {
+                state.queuedMessages.push(message);
+                addUserMessage(message);
+                input.value = '';
+                
+                const queuedDiv = document.createElement('div');
+                queuedDiv.className = 'queued-message';
+                queuedDiv.textContent = '⏳ Message queued (offline)';
+                document.getElementById('messages').appendChild(queuedDiv);
+                
+                saveState();
+                return;
+            }
+            
+            addUserMessage(message);
+            input.value = '';
+            
+            // Analyze sentiment
+            const sentiment = analyzeSentiment(message);
+            
+            // Check for FAQ match
+            const faqMatch = findFAQMatch(message);
+            if (faqMatch) {
+                setTimeout(() => {
+                    addBotMessage(`📚 ${faqMatch.answer}`);
+                    addSystemMessage(`ℹ️ Answer from FAQ library`);
+                }, 800);
+                return;
+            }
+            
+            // Process message
+            setTimeout(() => processUserMessage(message, sentiment), 800);
+        }
+
+        function showRateLimitWarning() {
+            const warning = document.getElementById('rateLimitWarning');
+            warning.classList.add('show');
+            setTimeout(() => {
+                warning.classList.remove('show');
+            }, 3000);
+            logEvent('Rate limit triggered');
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function addUserMessage(text) {
+            state.messages.push({ type: 'user', text, timestamp: Date.now() });
+            const sentiment = analyzeSentiment(text);
+            renderMessage({ type: 'user', text, sentiment });
+            saveState();
+        }
+
+        function addBotMessage(text) {
+            showTyping();
+            const typingDelay = 800 + Math.random() * 1700; // 0.8-2.5 seconds
+            setTimeout(() => {
+                hideTyping();
+                state.messages.push({ type: 'bot', text, timestamp: Date.now() });
+                renderMessage({ type: 'bot', text });
+                saveState();
+            }, typingDelay);
+        }
+
+        function addSystemMessage(text) {
+            state.messages.push({ type: 'system', text, timestamp: Date.now() });
+            renderMessage({ type: 'system', text });
+            saveState();
+        }
+
+        function renderMessage(message) {
+            const renderStartTime = performance.now();
+            
+            const messagesDiv = document.getElementById('messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${message.type}`;
+            msgDiv.setAttribute('role', 'article');
+            msgDiv.setAttribute('aria-label', `${message.type} message`);
+            msgDiv.textContent = message.text;
+            
+            // Add sentiment indicator for user messages
+            if (message.type === 'user' && message.sentiment) {
+                const sentimentSpan = document.createElement('span');
+                sentimentSpan.className = `sentiment-indicator sentiment-${message.sentiment}`;
+                sentimentSpan.textContent = message.sentiment === 'positive' ? '😊' : 
+                                           message.sentiment === 'negative' ? '😟' : '😐';
+                msgDiv.appendChild(sentimentSpan);
+            }
+            
+            // Add feedback buttons for bot messages
+            if (message.type === 'bot') {
+                const messageIndex = state.messages.length - 1;
+                addFeedbackButtons(msgDiv, messageIndex);
+            }
+            
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            const renderEndTime = performance.now();
+            const renderTime = Math.round(renderEndTime - renderStartTime);
+            performanceMetrics.messageRenderTimes.push(renderTime);
+            
+            // Calculate average
+            const sum = performanceMetrics.messageRenderTimes.reduce((a, b) => a + b, 0);
+            performanceMetrics.avgRenderTime = Math.round(sum / performanceMetrics.messageRenderTimes.length);
+            
+            updatePerformanceIndicator();
+            console.log(`[PERFORMANCE] Message render time: ${renderTime}ms`);
+        }
+
+        function updatePerformanceIndicator() {
+            const indicator = document.getElementById('perfIndicator');
+            indicator.textContent = `Load: ${performanceMetrics.loadTime}ms | Msg: ${performanceMetrics.avgRenderTime}ms`;
+        }
+
+        function renderMessages() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            state.messages.forEach(msg => renderMessage(msg));
+        }
+
+        function showTyping() {
+            const messagesDiv = document.getElementById('messages');
+            const typing = document.createElement('div');
+            typing.className = 'typing-indicator';
+            typing.id = 'typing';
+            typing.innerHTML = '<span>●</span><span>●</span><span>●</span>';
+            messagesDiv.appendChild(typing);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing');
+            if (typing) typing.remove();
+        }
+
+        // AI Processing
+        function processUserMessage(message, sentiment = 'neutral') {
+            const lowered = message.toLowerCase();
+            
+            // Extract information
+            extractLeadData(message);
+            
+            // Add sentiment-based encouragement if negative
+            if (sentiment === 'negative') {
+                setTimeout(() => {
+                    addBotMessage(getSentimentResponse('negative'));
+                }, 500);
+            }
+            
+            // Determine next action
+            if (state.meetingBooked) {
+                handlePostMeeting(lowered);
+            } else if (state.conversationStage === 'meeting' && (lowered.includes('yes') || lowered.includes('sure') || lowered.includes('ok') || lowered.includes('yeah'))) {
+                suggestMeetingTimes();
+            } else if (lowered.includes('slot') || lowered.includes('time')) {
+                bookMeeting(lowered);
+            } else {
+                // Adaptive branching
+                continueConversationAdaptive();
+            }
+            
+            updateLeadInfo();
+            updateProgressBar();
+        }
+
+        // Adaptive conversation flow
+        function continueConversationAdaptive() {
+            let nextStage = null;
+            
+            // Adaptive logic: if no budget mentioned, ask about timeline
+            if (!state.leadData.budget && !state.leadData.timeline && state.conversationStage === 'company') {
+                nextStage = 'timeline';
+            }
+            // If budget is low/missing but timeline is urgent, go to pain points
+            else if (!state.leadData.budget && state.leadData.timeline) {
+                nextStage = 'pain';
+            }
+            // Normal flow
+            else {
+                nextStage = getNextStage();
+            }
+            
+            if (nextStage) {
+                state.conversationStage = nextStage;
+                const response = getResponseForStage(nextStage);
+                addBotMessage(response);
+                
+                logEvent('Stage changed', { stage: nextStage });
+                
+                // Show quick reply suggestions for this stage
+                setTimeout(() => {
+                    showQuickRepliesForStage(nextStage);
+                }, 1500);
+            }
+        }
+
+        function showQuickRepliesForStage(stage) {
+            const replies = quickReplies[stage];
+            if (!replies) return;
+            
+            setTimeout(() => {
+                const quickActions = document.getElementById('quickActions');
+                quickActions.innerHTML = '';
+                quickActions.style.display = 'flex';
+                
+                replies.forEach(reply => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quick-btn';
+                    btn.textContent = reply;
+                    btn.onclick = () => {
+                        document.getElementById('userInput').value = reply;
+                        sendMessage();
+                    };
+                    quickActions.appendChild(btn);
+                });
+            }, 500);
+        }
+
+        function validateEmail(email) {
+            const re = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$/;
+            return re.test(email);
+        }
+
+        function validatePhone(phone) {
+            const re = /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b|\b\d{10}\b/;
+            return re.test(phone);
+        }
+
+        function highlightInput(elementId, isValid) {
+            const input = document.getElementById(elementId);
+            if (input) {
+                input.classList.remove('validated', 'invalid');
+                input.classList.add(isValid ? 'validated' : 'invalid');
+            }
+        }
+
+        function extractLeadData(message) {
+            const lowered = message.toLowerCase();
+            let dataExtracted = false;
+            
+            // Name extraction
+            if (!state.leadData.name && state.conversationStage === 'interest') {
+                const namePatterns = [
+                    /(?:i'm|i am|this is|name is|call me)\s+([a-z]+(?:\s+[a-z]+)?)/i,
+                    /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)$/
+                ];
+                for (let pattern of namePatterns) {
+                    const match = message.match(pattern);
+                    if (match) {
+                        state.leadData.name = match[1].trim();
+                        state.qualificationScore += 15;
+                        state.questionsAnswered++;
+                        addSystemMessage(`✓ Name captured: ${state.leadData.name}`);
+                        logEvent('Name captured', { name: state.leadData.name });
+                        dataExtracted = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Email extraction with validation
+            const emailMatch = message.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/);
+            if (emailMatch && !state.leadData.email) {
+                const email = emailMatch[0];
+                if (validateEmail(email)) {
+                    state.leadData.email = email;
+                    state.qualificationScore += 20;
+                    state.questionsAnswered++;
+                    addSystemMessage(`✓ Email captured: ${state.leadData.email} ✅`);
+                    logEvent('Email captured', { email });
+                    dataExtracted = true;
+                } else {
+                    addSystemMessage(`⚠️ Email format looks invalid. Please check.`);
+                }
+            }
+            
+            // Phone extraction with validation
+            const phoneMatch = message.match(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b|\b\d{10}\b/);
+            if (phoneMatch && !state.leadData.phone) {
+                const phone = phoneMatch[0];
+                if (validatePhone(phone)) {
+                    state.leadData.phone = phone;
+                    state.qualificationScore += 15;
+                    state.questionsAnswered++;
+                    addSystemMessage(`✓ Phone captured: ${state.leadData.phone} ✅`);
+                    logEvent('Phone captured', { phone });
+                    dataExtracted = true;
+                } else {
+                    addSystemMessage(`⚠️ Phone format looks invalid. Please verify.`);
+                }
+            }
+            
+            // Company extraction
+            if ((lowered.includes('work at') || lowered.includes('company') || lowered.includes('from')) && !state.leadData.company) {
+                const companyPatterns = [
+                    /(?:work at|from|company is)\s+([A-Z][a-z\s&]+)/i,
+                    /^([A-Z][a-z&\s]+)$/
+                ];
+                for (let pattern of companyPatterns) {
+                    const match = message.match(pattern);
+                    if (match && match[1].length > 2) {
+                        state.leadData.company = match[1].trim();
+                        state.qualificationScore += 10;
+                        state.questionsAnswered++;
+                        addSystemMessage(`✓ Company captured: ${state.leadData.company}`);
+                        logEvent('Company captured', { company: state.leadData.company });
+                        dataExtracted = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Budget extraction - enhanced scoring
+            if ((lowered.includes('$') || lowered.includes('budget') || lowered.includes('k') || lowered.includes('thousand')) && !state.leadData.budget) {
+                const budgetMatch = message.match(/\$?(\d+)k?/i);
+                if (budgetMatch) {
+                    state.leadData.budget = budgetMatch[0];
+                    const amount = parseInt(budgetMatch[1]);
+                    // Higher budget = higher score
+                    if (amount >= 100) state.qualificationScore += 25;
+                    else if (amount >= 50) state.qualificationScore += 20;
+                    else if (amount >= 10) state.qualificationScore += 15;
+                    else state.qualificationScore += 10;
+                    state.questionsAnswered++;
+                    addSystemMessage(`✓ Budget captured: ${state.leadData.budget}`);
+                    logEvent('Budget captured', { budget: state.leadData.budget, amount });
+                    dataExtracted = true;
+                }
+            }
+            
+            // Timeline extraction - urgency scoring
+            if ((lowered.includes('asap') || lowered.includes('immediately') || lowered.includes('week') || lowered.includes('month') || lowered.includes('soon')) && !state.leadData.timeline) {
+                state.leadData.timeline = message.substring(0, 50);
+                state.questionsAnswered++;
+                // ASAP = higher score
+                if (lowered.includes('asap') || lowered.includes('immediately')) {
+                    state.qualificationScore += 15;
+                } else if (lowered.includes('week')) {
+                    state.qualificationScore += 12;
+                } else {
+                    state.qualificationScore += 8;
+                }
+                addSystemMessage(`✓ Timeline captured`);
+                logEvent('Timeline captured', { timeline: state.leadData.timeline });
+                dataExtracted = true;
+            }
+            
+            // Interest/Pain points
+            if (lowered.includes('need') || lowered.includes('looking for') || lowered.includes('want') || lowered.includes('help')) {
+                if (!state.leadData.interest) {
+                    state.leadData.interest = message.substring(0, 100);
+                    state.qualificationScore += 10;
+                    state.questionsAnswered++;
+                    addSystemMessage(`✓ Interest captured`);
+                    logEvent('Interest captured');
+                    dataExtracted = true;
+                }
+                state.leadData.painPoints.push(message.substring(0, 100));
+            }
+            
+            saveState();
+        }
+
+        function continueConversation() {
+            const nextStage = getNextStage();
+            if (nextStage) {
+                state.conversationStage = nextStage;
+                const response = getResponseForStage(nextStage);
+                addBotMessage(response);
+                
+                // Show quick reply suggestions for this stage
+                setTimeout(() => {
+                    showQuickRepliesForStage(nextStage);
+                }, 1500);
+            }
+        }
+
+        // Voice Input
+        function initializeVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = state.language === 'en' ? 'en-US' : state.language + '-' + state.language.toUpperCase();
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('userInput').value = transcript;
+                    stopVoiceInput();
+                    logEvent('Voice input captured', { text: transcript });
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    stopVoiceInput();
+                    addSystemMessage('⚠️ Voice input failed. Please try typing.');
+                };
+                
+                recognition.onend = function() {
+                    stopVoiceInput();
+                };
+            } else {
+                console.log('Speech recognition not supported');
+            }
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                alert('Voice input not supported in your browser. Please use Chrome, Edge, or Safari.');
+                return;
+            }
+            
+            if (isRecording) {
+                stopVoiceInput();
+            } else {
+                startVoiceInput();
+            }
+        }
+
+        function startVoiceInput() {
+            isRecording = true;
+            const btn = document.getElementById('voiceBtn');
+            btn.classList.add('recording');
+            btn.textContent = '🔴';
+            recognition.start();
+            logEvent('Voice input started');
+        }
+
+        function stopVoiceInput() {
+            isRecording = false;
+            const btn = document.getElementById('voiceBtn');
+            btn.classList.remove('recording');
+            btn.textContent = '🎤';
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+
+        // Share Chat
+        function shareChat() {
+            const transcript = state.messages.map(msg => 
+                `${msg.type.toUpperCase()}: ${msg.text}`
+            ).join('\n');
+            
+            const encodedTranscript = btoa(unescape(encodeURIComponent(transcript)));
+            const shareUrl = `${window.location.origin}${window.location.pathname}?chat=${encodedTranscript}`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                addSystemMessage('🔗 Share link copied to clipboard!');
+                logEvent('Chat shared');
+                
+                // Show share options
+                alert(`Share Link:\n\n${shareUrl}\n\nLink copied to clipboard!`);
+            }).catch(err => {
+                // Fallback: show in prompt
+                prompt('Copy this share link:', shareUrl);
+            });
+        }
+
+        // Progress Bar
+        function updateProgressBar() {
+            const progress = (state.questionsAnswered / state.totalQuestions) * 100;
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            if (progressBar) {
+                progressBar.style.width = progress + '%';
+            }
+            
+            if (progressText) {
+                progressText.textContent = `${state.questionsAnswered} / ${state.totalQuestions} completed`;
+            }
+        }
+
+        // CRM Panel Functions
+        function toggleDebugPanel() {
+            const panel = document.getElementById('debugPanel');
+            panel.classList.toggle('open');
+            logEvent('Debug panel toggled');
+        }
+
+        function updateCRMPanel() {
+            const leadCount = document.getElementById('leadCount');
+            const leadsList = document.getElementById('leadsList');
+            
+            if (leadCount) {
+                leadCount.textContent = crmLeads.length;
+            }
+            
+            if (leadsList) {
+                if (crmLeads.length === 0) {
+                    leadsList.innerHTML = '<div style="color: #666; font-size: 11px; text-align: center; padding: 20px;">No leads stored yet</div>';
+                } else {
+                    leadsList.innerHTML = crmLeads.map((lead, index) => `
+                        <div class="lead-card">
+                            <strong>Lead #${index + 1}</strong> - Score: ${lead.score}%<br>
+                            <strong>Name:</strong> ${lead.name || 'N/A'}<br>
+                            <strong>Email:</strong> ${lead.email || 'N/A'}<br>
+                            <strong>Phone:</strong> ${lead.phone || 'N/A'}<br>
+                            <strong>Company:</strong> ${lead.company || 'N/A'}<br>
+                            <strong>Budget:</strong> ${lead.budget || 'N/A'}<br>
+                            <strong>Meeting:</strong> ${lead.meetingTime || 'Not booked'}<br>
+                            <small style="color: #666;">Added: ${new Date(lead.timestamp).toLocaleString()}</small>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        function saveToCRM() {
+            const lead = {
+                ...state.leadData,
+                score: state.qualificationScore,
+                meetingTime: state.meetingTime,
+                timestamp: Date.now(),
+                messages: state.messages.length
+            };
+            
+            crmLeads.push(lead);
+            localStorage.setItem('crmLeads', JSON.stringify(crmLeads));
+            updateCRMPanel();
+            logEvent('Lead saved to CRM', { score: lead.score });
+        }
+
+        function exportCRMData() {
+            const data = JSON.stringify(crmLeads, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `crm-leads-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            addSystemMessage('📊 CRM data exported!');
+            logEvent('CRM data exported', { leads: crmLeads.length });
+        }
+
+        // Emoji Picker
+        function initializeEmojiPicker() {
+            const grid = document.getElementById('emojiGrid');
+            emojis.forEach(emoji => {
+                const item = document.createElement('div');
+                item.className = 'emoji-item';
+                item.textContent = emoji;
+                item.onclick = () => insertEmoji(emoji);
+                grid.appendChild(item);
+            });
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.classList.toggle('open');
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('userInput');
+            input.value += emoji;
+            input.focus();
+            toggleEmojiPicker();
+        }
+
+        // File Upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert('File too large. Maximum size is 5MB.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileData = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: e.target.result,
+                    timestamp: Date.now()
+                };
+                
+                state.uploadedFiles.push(fileData);
+                saveState();
+                
+                addSystemMessage(`📎 File uploaded: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+                logEvent('File uploaded', { name: file.name, size: file.size });
+                
+                // Add file indicator to input
+                const input = document.getElementById('userInput');
+                input.value = `📎 ${file.name} - ` + (input.value || 'Add a message...');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        // Search Messages
+        function toggleSearch() {
+            const container = document.getElementById('searchContainer');
+            container.classList.toggle('active');
+            if (container.classList.contains('active')) {
+                document.getElementById('searchInput').focus();
+            } else {
+                searchMessages(''); // Clear search
+            }
+        }
+
+        function searchMessages(query) {
+            if (!query) query = document.getElementById('searchInput').value.toLowerCase();
+            
+            const messages = document.querySelectorAll('.message');
+            let foundCount = 0;
+            
+            messages.forEach(msg => {
+                msg.classList.remove('search-result');
+                if (query && msg.textContent.toLowerCase().includes(query)) {
+                    msg.classList.add('search-result');
+                    foundCount++;
+                }
+            });
+            
+            if (query) {
+                logEvent('Search performed', { query, results: foundCount });
+            }
+        }
+
+        // Personality Toggle
+        function togglePersonality() {
+            state.personality = state.personality === 'friendly' ? 'formal' : 'friendly';
+            const btn = document.getElementById('personalityBtn');
+            btn.textContent = state.personality === 'friendly' ? '🎭 FRIENDLY MODE' : '🎭 FORMAL MODE';
+            
+            addSystemMessage(`🎭 Bot personality switched to ${state.personality.toUpperCase()} mode`);
+            logEvent('Personality toggled', { mode: state.personality });
+            saveState();
+        }
+
+        // Feedback System
+        function addFeedbackButtons(messageElement, messageIndex) {
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'feedback-buttons';
+            feedbackDiv.innerHTML = `
+                <button class="feedback-btn" onclick="handleFeedback(${messageIndex}, 'positive')" 
+                        aria-label="Positive feedback" data-feedback="positive">👍</button>
+                <button class="feedback-btn" onclick="handleFeedback(${messageIndex}, 'negative')" 
+                        aria-label="Negative feedback" data-feedback="negative">👎</button>
+            `;
+            messageElement.appendChild(feedbackDiv);
+        }
+
+        function handleFeedback(messageIndex, type) {
+            const feedback = {
+                messageIndex,
+                type,
+                timestamp: Date.now()
+            };
+            
+            state.feedback.responses.push(feedback);
+            state.feedback[type]++;
+            
+            // Update analytics
+            analytics.feedback[type]++;
+            saveAnalytics();
+            updateAnalyticsDashboard();
+            
+            // Visual feedback
+            const buttons = document.querySelectorAll('.message')[messageIndex].querySelectorAll('.feedback-btn');
+            buttons.forEach(btn => {
+                if (btn.dataset.feedback === type) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            addSystemMessage(type === 'positive' 
+                ? '✅ Thanks for the positive feedback!' 
+                : '📝 Thanks for the feedback. We\'ll improve!');
+            
+            logEvent('Feedback received', { type, messageIndex });
+            saveState();
+        }
+
+        // Notification System
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                alert('This browser does not support notifications');
+                return;
+            }
+            
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    addSystemMessage('🔔 Notifications enabled! You\'ll be reminded about your meeting.');
+                    logEvent('Notifications enabled');
+                    document.getElementById('notificationPrompt').style.display = 'none';
+                } else {
+                    addSystemMessage('⚠️ Notification permission denied.');
+                }
+            });
+        }
+
+        function scheduleNotification(meetingTime) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                return;
+            }
+            
+            // Schedule notification for 1 hour before meeting (simulated)
+            setTimeout(() => {
+                new Notification('Meeting Reminder 📅', {
+                    body: `Your meeting is coming up at ${meetingTime}`,
+                    icon: '📅',
+                    tag: 'meeting-reminder'
+                });
+            }, 5000); // Demo: 5 seconds instead of 1 hour
+            
+            logEvent('Notification scheduled', { meetingTime });
+        }
+
+        // Keyboard Navigation
+        function setupKeyboardNavigation() {
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + K: Focus search
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    toggleSearch();
+                }
+                
+                // Ctrl/Cmd + E: Toggle emoji picker
+                if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                    e.preventDefault();
+                    toggleEmojiPicker();
+                }
+                
+                // Ctrl/Cmd + D: Toggle debug panel
+                if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                    e.preventDefault();
+                    toggleDebugPanel();
+                }
+                
+                // Ctrl/Cmd + A: Toggle analytics panel
+                if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                    e.preventDefault();
+                    toggleAnalyticsPanel();
+                }
+                
+                // Escape: Close all panels
+                if (e.key === 'Escape') {
+                    document.getElementById('emojiPicker').classList.remove('open');
+                    document.getElementById('searchContainer').classList.remove('active');
+                }
+            });
+            
+            logEvent('Keyboard navigation initialized');
+        }
+
+        // FAQ System
+        function initializeFAQ() {
+            const panel = document.getElementById('faqPanel');
+            if (!panel) return;
+            
+            panel.innerHTML = faqData.map((faq, index) => `
+                <div class="faq-item" onclick="toggleFAQ(${index})">
+                    <div class="faq-question">${faq.question}</div>
+                    <div class="faq-answer">${faq.answer}</div>
+                </div>
+            `).join('');
+        }
+
+        function toggleFAQ(index) {
+            const items = document.querySelectorAll('.faq-item');
+            items[index].classList.toggle('open');
+        }
+
+        function findFAQMatch(message) {
+            const lowered = message.toLowerCase();
+            
+            for (let faq of faqData) {
+                const questionWords = faq.question.toLowerCase().split(' ');
+                let matchCount = 0;
+                
+                questionWords.forEach(word => {
+                    if (lowered.includes(word) && word.length > 3) {
+                        matchCount++;
+                    }
+                });
+                
+                // If 50%+ words match, return this FAQ
+                if (matchCount >= questionWords.length * 0.5) {
+                    logEvent('FAQ match found', { question: faq.question });
+                    return faq;
+                }
+            }
+            
+            return null;
+        }
+
+        // Contact Edit Modal
+        function openContactEdit() {
+            document.getElementById('editName').value = state.leadData.name || '';
+            document.getElementById('editEmail').value = state.leadData.email || '';
+            document.getElementById('editPhone').value = state.leadData.phone || '';
+            document.getElementById('editCompany').value = state.leadData.company || '';
+            document.getElementById('editBudget').value = state.leadData.budget || '';
+            
+            document.getElementById('contactEditModal').classList.add('show');
+            document.getElementById('contactEditOverlay').style.display = 'block';
+            logEvent('Contact edit opened');
+        }
+
+        function closeContactEdit() {
+            document.getElementById('contactEditModal').classList.remove('show');
+            document.getElementById('contactEditOverlay').style.display = 'none';
+        }
+
+        function saveContactEdit() {
+            state.leadData.name = sanitizeInput(document.getElementById('editName').value);
+            state.leadData.email = sanitizeInput(document.getElementById('editEmail').value);
+            state.leadData.phone = sanitizeInput(document.getElementById('editPhone').value);
+            state.leadData.company = sanitizeInput(document.getElementById('editCompany').value);
+            state.leadData.budget = sanitizeInput(document.getElementById('editBudget').value);
+            
+            saveState();
+            updateLeadInfo();
+            closeContactEdit();
+            
+            addSystemMessage('✅ Contact information updated!');
+            logEvent('Contact info saved');
+            
+            // Continue to meeting scheduling
+            addBotMessage('Great! Your information has been updated. Let me suggest some meeting times...');
+            setTimeout(suggestMeetingTimes, 1000);
+        }
+
+        // CSV Export
+        function exportLeadsAsCSV() {
+            if (crmLeads.length === 0) {
+                alert('No leads to export');
+                return;
+            }
+            
+            // CSV Headers
+            let csv = 'Name,Email,Phone,Company,Budget,Timeline,Score,Meeting Time,Timestamp\n';
+            
+            // CSV Data
+            crmLeads.forEach(lead => {
+                csv += `"${lead.name || ''}","${lead.email || ''}","${lead.phone || ''}","${lead.company || ''}","${lead.budget || ''}","${lead.timeline || ''}",${lead.score},"${lead.meetingTime || ''}","${new Date(lead.timestamp).toLocaleString()}"\n`;
+            });
+            
+            // Create download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `leads-export-${Date.now()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            addSystemMessage('📊 Leads exported as CSV!');
+            logEvent('CSV export', { leads: crmLeads.length });
+        }
+
+        // Email Simulation
+        function sendConfirmationEmail() {
+            const subject = encodeURIComponent('Meeting Confirmation - Your Discovery Call');
+            const body = encodeURIComponent(`Hi ${state.leadData.name || 'there'},
+
+Thank you for booking a meeting with us!
+
+Meeting Details:
+📅 Date & Time: ${state.meetingTime}
+⏱️ Duration: 15 minutes
+📞 Type: Video Call
+
+We'll send you a calendar invite shortly with the video call link.
+
+Looking forward to speaking with you!
+
+Best regards,
+${state.botName}
+Sales Team`);
+            
+            const mailtoLink = `mailto:${state.leadData.email}?subject=${subject}&body=${body}`;
+            
+            // Simulate sending
+            console.log('=== EMAIL SIMULATION ===');
+            console.log('To:', state.leadData.email);
+            console.log('Subject:', decodeURIComponent(subject));
+            console.log('Body:', decodeURIComponent(body));
+            console.log('Mailto Link:', mailtoLink);
+            console.log('========================');
+            
+            addSystemMessage('📧 Confirmation email sent!');
+            logEvent('Confirmation email sent', { to: state.leadData.email });
+            
+            // Optional: Actually open mailto (commented out to avoid spam)
+            // window.location.href = mailtoLink;
+        }
+
+        // Update Banner
+        function showUpdateBanner() {
+            document.getElementById('updateBanner').classList.add('show');
+            logEvent('Update banner shown');
+        }
+
+        function dismissUpdate() {
+            document.getElementById('updateBanner').classList.remove('show');
+            logEvent('Update banner dismissed');
+        }
+
+        function simulateUpdate() {
+            addSystemMessage('🔄 Updating application...');
+            
+            setTimeout(() => {
+                addSystemMessage('✅ Update complete! Reloading...');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }, 2000);
+            
+            logEvent('Update initiated');
+        }
+
+        function getNextStage() {
+            const possibleNext = stages[state.conversationStage] || ['meeting'];
+            
+            for (let stage of possibleNext) {
+                if (stage === 'name' && !state.leadData.name) return 'name';
+                if (stage === 'email' && !state.leadData.email) return 'email';
+                if (stage === 'phone' && !state.leadData.phone) return 'phone';
+                if (stage === 'company' && !state.leadData.company) return 'company';
+                if (stage === 'budget' && !state.leadData.budget) return 'budget';
+                if (stage === 'timeline' && !state.leadData.timeline) return 'timeline';
+                if (stage === 'pain' && state.leadData.painPoints.length === 0) return 'pain';
+                if (stage === 'meeting') return 'meeting';
+            }
+            
+            return 'meeting';
+        }
+
+        function getResponseForStage(stage) {
+            const templates = responses[stage] || responses.greeting;
+            let response = getRandomResponse(stage);
+            
+            if (state.leadData.name) {
+                response = response.replace('{name}', state.leadData.name);
+            }
+            
+            return response;
+        }
+
+        function getRandomResponse(stage) {
+            const options = responses[stage] || responses.greeting;
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        function suggestMeetingTimes() {
+            // Show review button if we have contact info
+            if (state.leadData.name || state.leadData.email) {
+                document.getElementById('reviewBtn').style.display = 'block';
+            }
+            
+            const now = new Date();
+            const slots = [];
+            
+            for (let i = 1; i <= 3; i++) {
+                const date = new Date(now);
+                date.setDate(date.getDate() + i);
+                const time1 = `${date.toLocaleDateString()} at 10:00 AM`;
+                const time2 = `${date.toLocaleDateString()} at 2:00 PM`;
+                slots.push(time1, time2);
+            }
+            
+            const slotText = slots.map((s, i) => `${i + 1}. ${s}`).join('\n');
+            addBotMessage(`Here are some available slots:\n\n${slotText}\n\nJust type the number of your preferred slot, or click "✏️ REVIEW INFO" to update your contact details first!`);
+            
+            // Show quick action buttons
+            showQuickActions(slots);
+        }
+
+        function showQuickActions(slots) {
+            const quickActions = document.getElementById('quickActions');
+            quickActions.innerHTML = '';
+            quickActions.style.display = 'flex';
+            
+            slots.slice(0, 4).forEach((slot, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-btn';
+                btn.textContent = `Slot ${i + 1}`;
+                btn.onclick = () => {
+                    document.getElementById('userInput').value = `Slot ${i + 1}`;
+                    sendMessage();
+                };
+                quickActions.appendChild(btn);
+            });
+        }
+
+        function bookMeeting(message) {
+            const slotMatch = message.match(/\d+/);
+            if (slotMatch) {
+                const slotNum = parseInt(slotMatch[0]);
+                const now = new Date();
+                now.setDate(now.getDate() + Math.ceil(slotNum / 2));
+                const time = slotNum % 2 === 1 ? '10:00 AM' : '2:00 PM';
+                const endTime = slotNum % 2 === 1 ? '10:15 AM' : '2:15 PM';
+                
+                state.meetingBooked = true;
+                state.meetingTime = `${now.toLocaleDateString()} at ${time}`;
+                state.qualificationScore = 100;
+                
+                addSystemMessage(`🎉 MEETING BOOKED: ${state.meetingTime}`);
+                addBotMessage(`Perfect! I've booked your meeting for ${state.meetingTime}. You'll receive a confirmation email at ${state.leadData.email || 'your email'} shortly. Looking forward to speaking with you! 🚀`);
+                
+                // Show calendar card
+                displayCalendarCard(now, time, endTime);
+                
+                document.getElementById('quickActions').style.display = 'none';
+                
+                // Show download button
+                setTimeout(() => {
+                    document.getElementById('downloadBtn').style.display = 'block';
+                }, 1000);
+                
+                // Save to CRM
+                saveToCRM();
+                
+                // Update analytics
+                analytics.totalMeetings++;
+                analytics.scores.push(state.qualificationScore);
+                
+                // Update score distribution
+                if (state.qualificationScore <= 25) analytics.scoreDistribution.cold++;
+                else if (state.qualificationScore <= 50) analytics.scoreDistribution.warm++;
+                else if (state.qualificationScore <= 75) analytics.scoreDistribution.hot++;
+                else analytics.scoreDistribution.qualified++;
+                
+                saveAnalytics();
+                updateAnalyticsDashboard();
+                
+                // Simulate CRM integration
+                simulateCRMIntegration();
+                
+                // Send confirmation email
+                setTimeout(() => {
+                    sendConfirmationEmail();
+                }, 2000);
+                
+                // Show notification prompt
+                if ('Notification' in window && Notification.permission === 'default') {
+                    setTimeout(() => {
+                        document.getElementById('notificationPrompt').style.display = 'block';
+                    }, 3000);
+                } else if (Notification.permission === 'granted') {
+                    scheduleNotification(state.meetingTime);
+                }
+                
+                // Track AB test conversion
+                trackABTestConversion();
+                
+                // Clear draft
+                clearDraft();
+                
+                logEvent('Meeting booked', { time: state.meetingTime });
+                
+                saveState();
+            }
+        }
+
+        // Simulate CRM Integration
+        function simulateCRMIntegration() {
+            addSystemMessage('🔄 Sending lead to CRM...');
+            
+            setTimeout(() => {
+                const payload = {
+                    lead: {
+                        ...state.leadData,
+                        score: state.qualificationScore,
+                        meetingTime: state.meetingTime,
+                        source: 'Website Chat',
+                        timestamp: new Date().toISOString()
+                    },
+                    uploadedFiles: state.uploadedFiles.map(f => ({
+                        name: f.name,
+                        type: f.type,
+                        size: f.size
+                    }))
+                };
+                
+                console.log('=== CRM INTEGRATION SIMULATION ===');
+                console.log('API Endpoint: https://api.example.com/crm/leads');
+                console.log('Method: POST');
+                console.log('Payload:', JSON.stringify(payload, null, 2));
+                console.log('Status: 200 OK');
+                console.log('Response: { "success": true, "leadId": "LEAD-' + Date.now() + '" }');
+                console.log('================================');
+                
+                addSystemMessage('✅ Lead successfully sent to CRM!');
+                logEvent('CRM integration executed', { leadId: 'LEAD-' + Date.now() });
+            }, 1500);
+        }
+
+        function displayCalendarCard(date, startTime, endTime) {
+            const calendarHTML = `
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <div class="calendar-icon">📅</div>
+                        <div>
+                            <div class="calendar-title">Discovery Call Scheduled</div>
+                            <div style="font-size: 9px; color: #00ff00;">Confirmation sent to your email</div>
+                        </div>
+                    </div>
+                    <div class="calendar-details">
+                        <div class="calendar-detail-row">
+                            <span>📆</span>
+                            <span><strong>Date:</strong> ${date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        </div>
+                        <div class="calendar-detail-row">
+                            <span>🕐</span>
+                            <span><strong>Time:</strong> ${startTime} - ${endTime} (15 minutes)</span>
+                        </div>
+                        <div class="calendar-detail-row">
+                            <span>📞</span>
+                            <span><strong>Type:</strong> Video Call</span>
+                        </div>
+                        <div class="calendar-detail-row">
+                            <span>👤</span>
+                            <span><strong>Attendee:</strong> ${state.leadData.name || 'You'}</span>
+                        </div>
+                        <div class="calendar-detail-row">
+                            <span>✉️</span>
+                            <span><strong>Email:</strong> ${state.leadData.email || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('meetingInfo').innerHTML = calendarHTML;
+            document.getElementById('meetingInfo').style.display = 'block';
+        }
+
+        function handlePostMeeting(message) {
+            if (message.includes('reschedule') || message.includes('change')) {
+                state.meetingBooked = false;
+                addBotMessage("No problem! Let me suggest some new times...");
+                setTimeout(suggestMeetingTimes, 1000);
+            } else {
+                addBotMessage("Is there anything else I can help you with regarding your upcoming meeting?");
+            }
+        }
+
+        function updateLeadInfo() {
+            // Cap score at 100
+            if (state.qualificationScore > 100) state.qualificationScore = 100;
+            
+            document.getElementById('score').textContent = `${state.qualificationScore}%`;
+            
+            // Animate score bar
+            const scoreFill = document.getElementById('scoreFill');
+            scoreFill.style.width = `${state.qualificationScore}%`;
+            scoreFill.textContent = `${state.qualificationScore}%`;
+            
+            let status = 'Gathering info...';
+            if (state.qualificationScore >= 100) status = '🎯 QUALIFIED - BOOKED';
+            else if (state.qualificationScore >= 70) status = '🔥 Hot Lead';
+            else if (state.qualificationScore >= 40) status = '⚡ Warm Lead';
+            else if (state.qualificationScore >= 20) status = '❄️ Cold Lead';
+            
+            document.getElementById('leadStatus').textContent = status;
+            
+            let detailsHTML = '';
+            if (state.leadData.name) detailsHTML += `<div><strong>Name:</strong> ${state.leadData.name}</div>`;
+            if (state.leadData.email) detailsHTML += `<div><strong>Email:</strong> ${state.leadData.email}</div>`;
+            if (state.leadData.phone) detailsHTML += `<div><strong>Phone:</strong> ${state.leadData.phone}</div>`;
+            if (state.leadData.company) detailsHTML += `<div><strong>Company:</strong> ${state.leadData.company}</div>`;
+            if (state.leadData.budget) detailsHTML += `<div><strong>Budget:</strong> ${state.leadData.budget}</div>`;
+            if (state.leadData.timeline) detailsHTML += `<div><strong>Timeline:</strong> ${state.leadData.timeline}</div>`;
+            
+            document.getElementById('detectedInfo').innerHTML = detailsHTML;
+        }
+
+        // Download transcript function
+        function downloadTranscript() {
+            let transcript = '='.repeat(60) + '\n';
+            transcript += 'CHAT TRANSCRIPT - 2026 Website Chat to Qualified Meeting\n';
+            transcript += '='.repeat(60) + '\n\n';
+            transcript += `Date: ${new Date().toLocaleString()}\n`;
+            transcript += `Language: ${languageNames[state.language]}\n`;
+            transcript += `Qualification Score: ${state.qualificationScore}%\n\n`;
+            
+            transcript += '-'.repeat(60) + '\n';
+            transcript += 'LEAD INFORMATION\n';
+            transcript += '-'.repeat(60) + '\n';
+            if (state.leadData.name) transcript += `Name: ${state.leadData.name}\n`;
+            if (state.leadData.email) transcript += `Email: ${state.leadData.email}\n`;
+            if (state.leadData.phone) transcript += `Phone: ${state.leadData.phone}\n`;
+            if (state.leadData.company) transcript += `Company: ${state.leadData.company}\n`;
+            if (state.leadData.budget) transcript += `Budget: ${state.leadData.budget}\n`;
+            if (state.leadData.timeline) transcript += `Timeline: ${state.leadData.timeline}\n`;
+            if (state.meetingBooked) transcript += `\nMeeting: ${state.meetingTime}\n`;
+            
+            transcript += '\n' + '-'.repeat(60) + '\n';
+            transcript += 'CONVERSATION\n';
+            transcript += '-'.repeat(60) + '\n\n';
+            
+            state.messages.forEach(msg => {
+                const timestamp = new Date(msg.timestamp).toLocaleTimeString();
+                const sender = msg.type === 'user' ? 'USER' : msg.type === 'bot' ? 'BOT' : 'SYSTEM';
+                transcript += `[${timestamp}] ${sender}:\n${msg.text}\n\n`;
+            });
+            
+            transcript += '='.repeat(60) + '\n';
+            transcript += 'END OF TRANSCRIPT\n';
+            transcript += '='.repeat(60);
+            
+            // Create download
+            const blob = new Blob([transcript], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-transcript-${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            addSystemMessage('📥 Transcript downloaded successfully!');
+        }
+
+        // Clear data (for testing)
+        function clearData() {
+            if (confirm('Clear all chat data?')) {
+                localStorage.removeItem('chatState');
+                location.reload();
+            }
+        }
+
+        // Add keyboard shortcut to clear (Ctrl+Shift+C)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                clearData();
+            }
+        });
+
+        // Privacy Notice Functions
+        function acceptPrivacy() {
+            localStorage.setItem('privacyAccepted', 'true');
+            state.privacyAccepted = true;
+            document.getElementById('privacyNotice').classList.remove('show');
+            document.getElementById('privacyOverlay').classList.remove('show');
+            logEvent('Privacy accepted');
+            location.reload(); // Reload to initialize app
+        }
+
+        function declinePrivacy() {
+            alert('This app requires local storage to function. You can clear data anytime using the Reset button.');
+            logEvent('Privacy declined');
+        }
+
+        function showPrivacyNotice() {
+            document.getElementById('privacyNotice').classList.add('show');
+            document.getElementById('privacyOverlay').classList.add('show');
+        }
+
+        // A/B Testing Functions
+        function selectABTestVariant() {
+            // Check if variant already assigned
+            const saved = localStorage.getItem('abTestVariant');
+            if (saved && abTestVariants[saved]) {
+                state.abTestVariant = saved;
+            } else {
+                // Random assignment
+                const variants = ['A', 'B', 'C', 'D'];
+                state.abTestVariant = variants[Math.floor(Math.random() * variants.length)];
+                localStorage.setItem('abTestVariant', state.abTestVariant);
+            }
+            
+            // Track view
+            abTestResults[state.abTestVariant].views++;
+            localStorage.setItem('abTestResults', JSON.stringify(abTestResults));
+            
+            // Update indicator
+            document.getElementById('variantName').textContent = state.abTestVariant;
+            
+            console.log(`[A/B TEST] Variant ${state.abTestVariant} - ${abTestVariants[state.abTestVariant].name}`);
+            logEvent('AB test variant assigned', { variant: state.abTestVariant });
+        }
+
+        function trackABTestConversion() {
+            if (state.abTestVariant) {
+                abTestResults[state.abTestVariant].conversions++;
+                localStorage.setItem('abTestResults', JSON.stringify(abTestResults));
+                
+                // Log results
+                console.log('[A/B TEST] Results:');
+                Object.keys(abTestResults).forEach(variant => {
+                    const data = abTestResults[variant];
+                    const rate = data.views > 0 ? ((data.conversions / data.views) * 100).toFixed(2) : 0;
+                    console.log(`  Variant ${variant}: ${data.conversions}/${data.views} = ${rate}% conversion`);
+                });
+                
+                logEvent('AB test conversion', { variant: state.abTestVariant });
+            }
+        }
+
+        // Avatar Functions
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                showError('Please upload an image file');
+                return;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) {
+                showError('Image too large. Maximum size is 2MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.userAvatar = e.target.result;
+                document.getElementById('avatarPreview').innerHTML = `<img src="${state.userAvatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                saveState();
+                logEvent('Avatar uploaded');
+                addSystemMessage('✅ Profile picture updated!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadAvatar() {
+            if (state.userAvatar) {
+                document.getElementById('avatarPreview').innerHTML = `<img src="${state.userAvatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+            }
+        }
+
+        // Theme Functions
+        function toggleThemeSelector() {
+            document.getElementById('themeSelector').classList.toggle('open');
+        }
+
+        function applyTheme(themeName) {
+            // Remove all theme classes
+            document.body.className = '';
+            
+            // Add selected theme
+            if (themeName === 'light') {
+                document.body.classList.add('light-mode');
+            } else if (themeName !== 'dark') {
+                document.body.classList.add('theme-' + themeName);
+            }
+            
+            // Update active indicator
+            document.querySelectorAll('.theme-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.dataset.theme === themeName) {
+                    opt.classList.add('active');
+                }
+            });
+            
+            state.theme = themeName;
+            localStorage.setItem('theme', themeName);
+            document.getElementById('themeSelector').classList.remove('open');
+            
+            logEvent('Theme changed', { theme: themeName });
+            addSystemMessage(`🎨 Theme changed to ${themeName}`);
+        }
+
+        // Draft Auto-save Functions
+        function saveDraft() {
+            const draft = document.getElementById('userInput').value;
+            state.draftMessage = draft;
+            localStorage.setItem('draftMessage', draft);
+        }
+
+        function restoreDraft() {
+            const draft = localStorage.getItem('draftMessage');
+            if (draft) {
+                document.getElementById('userInput').value = draft;
+                state.draftMessage = draft;
+                console.log('[AUTO-SAVE] Draft restored:', draft.substring(0, 30) + '...');
+            }
+        }
+
+        function clearDraft() {
+            state.draftMessage = '';
+            localStorage.removeItem('draftMessage');
+        }
+
+        // Collaboration Mode Simulation
+        function enableCollabMode() {
+            state.collabMode = true;
+            document.getElementById('collabIndicator').style.display = 'inline-block';
+            addSystemMessage('👥 Multi-user mode enabled! Sarah (Sales Manager) has joined the chat.');
+            logEvent('Collaboration mode enabled');
+            
+            // Simulate second user typing
+            setTimeout(() => {
+                showCollabTyping('Sarah');
+                setTimeout(() => {
+                    hideCollabTyping();
+                    addCollabMessage('Sarah', 'Hi! I see you\'re chatting with our AI assistant. I\'m here if you need any human help! 😊');
+                }, 2000);
+            }, 5000);
+        }
+
+        function showCollabTyping(userName) {
+            const messagesDiv = document.getElementById('messages');
+            const typing = document.createElement('div');
+            typing.className = 'typing-user';
+            typing.id = 'collabTyping';
+            typing.textContent = `${userName} is typing...`;
+            messagesDiv.appendChild(typing);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideCollabTyping() {
+            const typing = document.getElementById('collabTyping');
+            if (typing) typing.remove();
+        }
+
+        function addCollabMessage(userName, text) {
+            const message = {
+                type: 'bot',
+                text: `[${userName}] ${text}`,
+                timestamp: Date.now()
+            };
+            state.messages.push(message);
+            renderMessage(message);
+            saveState();
+        }
+
+        // Error Handling
+        function showError(message, title = 'Error') {
+            const toast = document.getElementById('errorToast');
+            document.getElementById('errorMessage').textContent = message;
+            toast.querySelector('.error-title').textContent = `⚠️ ${title}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 5000);
+            
+            logEvent('Error shown', { message, title });
+        }
+
+        // Reset Functions
+        function openResetConfirmation() {
+            document.getElementById('resetConfirmation').classList.add('show');
+            logEvent('Reset confirmation opened');
+        }
+
+        function closeResetConfirmation() {
+            document.getElementById('resetConfirmation').classList.remove('show');
+        }
+
+        function confirmReset() {
+            // Clear all localStorage
+            const keysToKeep = [];
+            Object.keys(localStorage).forEach(key => {
+                if (!keysToKeep.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            console.log('[RESET] All data cleared. Reloading...');
+            logEvent('App reset');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        }
+
+        // Version History
+        function initializeVersionHistory() {
+            const panel = document.getElementById('versionHistory');
+            if (!panel) return;
+            
+            panel.innerHTML = versionHistory.map(v => `
+                <div class="version-item">
+                    <div class="version-number">v${v.version}</div>
+                    <div class="version-date">${v.date}</div>
+                    <div class="version-changes">
+                        ${v.changes.map(c => `• ${c}`).join('<br>')}
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
